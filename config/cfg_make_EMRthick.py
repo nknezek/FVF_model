@@ -14,7 +14,7 @@ Nl = 120 # Latitudinal cells
 
 # Define Physical Constants
 R = 3480e3  # Outer core radius in (m)
-h = [140e3]  # layer thickness in (m)
+h = [100e3]  # layer thickness in (m)
 Omega = 2*np.pi/(23.9345*3600.0)  # rotation rate in (rad/s)
 rho = 1.e4   # density in (kg/m^3)
 nu = [1e-1]   # momentum diffusivity in (m^2/s)
@@ -23,7 +23,7 @@ eta = 0.8  # magnetic diffusivity in (m^2/s)
 eta_th = 0.0
 mu_0 = 4.*np.pi*10.**-7  # vacuum permeability in (kg*m/(A^2s^2))
 g = 10.  # Gravity in m/s^2
-dCyr = [975.]
+dCyr = [30., 100., 300., 900.]
 
 # background magnetic field in (Tesla)
 # chocies: dipole, dipoleBr, absDipole, absDipoleBr, constantBr, set, sinfuncBr
@@ -45,7 +45,7 @@ Uphi = 0.0
 # Buoyancy Frequency
 # choices: constant, linear
 buoy_type = 'constant'
-buoy_ratio =  [0.84]
+buoy_ratio =  [1.0]
 
 # model parameters
 model_variables = ('ur', 'uth', 'uph', 'br', 'bth', 'bph', 'p', 'r_disp')

@@ -6,24 +6,30 @@ T_list = [970.]
 delta_T = 970.
 
 nev = 200
-d2_filter = 10e8
-dth_filter = 10e8
+
 eq_split = 0.5
+target_zeros = 0
+target_Q = 1.
+target_symmetric = True
+
 eq_var = 'p'
 real_var = 'ur'
+
 filemodel = 'model.p'
 fileA = 'A'
 fileB = 'B'
 savefile = 'data.p'
+
 use_initial_guess = False
+
 oscillate = True
 plot_robinson = False
 plot_B_obs = False
 plot_vel = True
-zeros_wanted = range(10)
-min_Q = 0.
-target_Q = 1.
+
 tol = 1e-8
+
+
 
 
 # dCyr_list = [120.]

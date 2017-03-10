@@ -40,27 +40,39 @@ def find_closest_CC(Target, dCyr_list):
 
 
 # Import constant parameters from config file
+T_list = cfg.T_list
+wt_T=cfg.wt_T
+delta_T = cfg.delta_T
+
 nev = cfg.nev
-d2_filter = cfg.d2_filter
-dth_filter = cfg.dth_filter
+target_Q = cfg.target_Q
+wt_Q=cfg.wt_Q
+target_th_order = cfg.target_th_order
+wt_th_order=cfg.wt_th_order
+target_r_order = cfg.target_r_order
+wt_r_order=cfg.wt_r_order
+num_to_keep = cfg.num_to_keep
+wt_region=cfg.wt_region
+wt_sym=cfg.wt_sym
 eq_split = cfg.eq_split
+
 eq_var = cfg.eq_var
 real_var = cfg.real_var
+
 filemodel = cfg.filemodel
 fileA = cfg.fileA
 fileB = cfg.fileB
-T_list = cfg.T_list
 dCyr_list = cfg.dCyr_list
 savefile = cfg.savefile
+
 plot_robinson = cfg.plot_robinson
 plot_B_obs = cfg.plot_B_obs
 plot_vel = cfg.plot_vel
-target_Q = cfg.target_Q
+
 tol = cfg.tol
-delta_T = cfg.delta_T
 
 # Iterate over parameters that can vary
-iter_param_names = ['data_dir', 'use_initial_guess', 'oscillate']
+iter_param_names = ['data_dir', 'oscillate']
 iter_params = {}
 for name in iter_param_names:
     value = eval('cfg.'+name)
@@ -83,7 +95,6 @@ logger.info('Main output directory set to {0}'.format(out_dir_base))
 
 for cnum, c in enumerate(combinations):
     data_dir = c['data_dir']
-    use_initial_guess = c['use_initial_guess']
     oscillate = c['oscillate']
 
     # Get information on layer thickness, buoyancy frequency, and magnetic field from data directory
@@ -137,21 +148,6 @@ for cnum, c in enumerate(combinations):
             logger.error( "Could not load matrices from file", exc_info=1)
             break
 
-        # %% Make initial vector guess
-        #==============================================================================
-        try:
-            if use_initial_guess:
-                v_eq_a = ((np.ones((model.Nk, model.Nl))*(np.cos(model.th[1:-1])*np.sin(model.th[1:-1])**50)).T*np.sin(np.linspace(0,np.pi,model.Nk)))*1e-5
-                v_eq_s = abs(v_eq_a)
-                bc0 = np.ones((2,model.Nl))*1e-16
-                v0 = np.ones((model.Nk, model.Nl))*1e-16
-                variables = [v_eq_s, v_eq_a, v_eq_s*1j, v_eq_a, v_eq_a*1j, v_eq_s, v_eq_s*1j, v_eq_s*1j]
-                start_vec = model.create_vector(variables)
-                fplt.plot_pcolormesh_rth(model, '-1', start_vec, dir_name=out_dir, title='initial guess', physical_units=True)
-                logger.info('created initial guess')
-        except:
-            logger.error('problem creating initial vector guess ', exc_info=1)
-            break
 
         # %% Set up SLEPc Solver
         #==============================================================================
@@ -162,11 +158,6 @@ for cnum, c in enumerate(combinations):
             EPS.setType(EPS.Type.KRYLOVSCHUR)
             EPS.setProblemType(SLEPc.EPS.ProblemType.PGNHEP)
             EPS.setTarget(Target)
-            if use_initial_guess:
-                V = PETSc.Vec().createSeq(model.SizeM)
-                V.setValues(range(model.SizeM), start_vec)
-                V.assemble()
-                EPS.setInitialSpace(V)
             EPS.setWhichEigenpairs(EPS.Which.TARGET_MAGNITUDE)
             EPS.setTolerances(tol)
             EPS.setFromOptions()
@@ -210,23 +201,12 @@ for cnum, c in enumerate(combinations):
         try:
             logger.info('Filtering Eigenvalues:')
 
-            fvals = vals
-            fvecs = vecs
-            # Filter by Power near Equator
-            fvals, fvecs = fana.filter_by_equator_power(model, vals, vecs, equator_fraction=eq_split, var=eq_var)
-            logger.info('\t{0} filtered eigenvalues to plot with power at equator, split={1:.1f}'.format(len(fvals), eq_split))
-
-            # %% Filter by number of zeros in theta-direction
-            fvals, fvecs = fana.filter_by_theta_zeros(model, fvals, fvecs, cfg.zeros_wanted, oscillate=oscillate)
-            logger.info('\t{0} eigenvectors found with requested number of zeros'.format(len(fvecs)))
-
-            # %% Filter by Quality Factor
-            fvals, fvecs = fana.filter_by_Q(model, fvals, fvecs, cfg.min_Q)
-            logger.info('\t{0} eigenvectors found with Q > {1:.2f}'.format(len(fvecs), cfg.min_Q))
-
-            #%% Filter by Period
-            fvals, fvecs = fana.filter_by_period(model, fvals, fvecs, T- delta_T, T+ delta_T)
-            logger.info('\t{0} eigenvectors found with {1:.2f} < T < {2:.2f}'.format(len(fvecs), T- delta_T, T+ delta_T))
+            # Filter by fit to given parameter choices
+            fvals, fvecs = fana.filter_by_misfit(model, vals, vecs, num_to_keep, target_T=T, target_Q=target_Q,
+                                                target_th_order=target_th_order, target_r_order=target_r_order,
+                                                target_region='equator', eq_cutoff=0.5, target_symmetric=True,
+                                                oscillate=False, wt_T=wt_T, wt_Q=wt_Q, wt_r_order=wt_r_order,
+                                                 wt_th_order=wt_th_order, wt_region=wt_region, wt_sym=wt_sym)
 
             #%% Convert Eigenvectors to ur real
             fvecs_tmp = []
