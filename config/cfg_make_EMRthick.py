@@ -6,7 +6,7 @@ import FVF_loglib as flog
 import pickle as pkl
 
 # mode to simulate (longitudinal)
-m = [6]
+m = [2]
 
 # Size of grid
 Nk = 60 # Radial cells
