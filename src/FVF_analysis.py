@@ -1,17 +1,18 @@
 import numpy as np
 
 
-def filter_by_misfit(model, vals, vecs, num_to_keep, target_T=None, target_Q=None, target_r_order=0, target_th_order=0, 
-                        target_region='equator',
-                          eq_cutoff=0.5, target_symmetric=True,oscillate=False,
-                          wt_T=1., wt_Q=1., wt_th_order=1., wt_r_order=1., wt_region=1., wt_sym=1.):
+def filter_by_misfit(model, vals, vecs, num_to_keep, target_T=None, target_Q=None, target_r_order=0, target_th_order=0,
+                     target_region='equator', th_ord_var ='uph', r_ord_var ='uph', eq_var='uph',
+                     eq_cutoff=0.5, target_symmetric=True,oscillate=False,
+                     wt_T=1., wt_Q=1., wt_th_order=1., wt_r_order=1., wt_region=1., wt_sym=1., wt_r_sm=1., wt_th_sm=1.):
     mf = np.zeros(len(vals))
     for i,(val, vec) in enumerate(zip(vals, vecs)):
-        mf[i] = misfit_result(model, val, vec, target_T=target_T, target_Q=target_Q,
+        mf[i] = misfit_result(model, val, vec, target_T=target_T, target_Q=target_Q, target_r_order=target_r_order,
                                    target_th_order=target_th_order, target_region=target_region,
                                    eq_cutoff=eq_cutoff, target_symmetric=target_symmetric, oscillate=oscillate,
+                                th_ord_var=th_ord_var, r_ord_var=r_ord_var, eq_var=eq_var,
                                    wt_T=wt_T, wt_Q=wt_Q, wt_r_order=wt_r_order, wt_th_order=wt_th_order,
-                                    wt_region=wt_region, wt_sym=wt_sym)
+                                    wt_region=wt_region, wt_sym=wt_sym, wt_r_sm=wt_r_sm, wt_th_sm=wt_th_sm)
     sorted_ind = np.argsort(mf)
     fvals = []
     fvecs = []
@@ -22,8 +23,9 @@ def filter_by_misfit(model, vals, vecs, num_to_keep, target_T=None, target_Q=Non
 
 
 def misfit_result(model, val, vec, target_T=None, target_Q=None, target_r_order=0, target_th_order=0, target_region='equator',
-                          eq_cutoff=0.5, target_symmetric=True,oscillate=False, th_ord_var ='uth', r_ord_var ='uth',
-                          wt_T=1., wt_Q=1., wt_r_order=1., wt_th_order=1., wt_region=1., wt_sym=1.):
+                          eq_cutoff=0.5, target_symmetric=True,oscillate=False,
+                        th_ord_var ='uph', r_ord_var ='uph', eq_var='uph',
+                          wt_T=1., wt_Q=1., wt_r_order=1., wt_th_order=1., wt_region=1., wt_sym=1., wt_r_sm=1, wt_th_sm=1.):
     mfsq = 0.
     nummf = 0.
     if target_T is not None:
@@ -39,11 +41,17 @@ def misfit_result(model, val, vec, target_T=None, target_Q=None, target_r_order=
         mfsq += (misfit_r_order(model, vec, target_r_order, oscillate=oscillate, var=r_ord_var)*wt_r_order)**2
         nummf +=1
     if target_region is not None:
-        mfsq += (misfit_region(model, vec, target_region, eq_cutoff)*wt_region)**2
+        mfsq += (misfit_region(model, vec, target_region, eq_cutoff, var=eq_var)*wt_region)**2
         nummf += 1
     if target_symmetric is not None:
-        mfsq += (misfit_symmetric(model, vec)*wt_sym)**2
+        mfsq += (misfit_symmetric(model, vec, var=eq_var)*wt_sym)**2
         nummf += 1
+    if wt_th_sm > 0.:
+        mfsq += (misfit_smoothness_th(model, vec, var=th_ord_var)*wt_th_sm)**2
+        nummf +=1
+    if wt_r_sm > 0.:
+        mfsq += (misfit_smoothness_r(model, vec, var=r_ord_var)*wt_r_sm)**2
+        nummf +=1
     return (mfsq/nummf)**0.5
 
 
@@ -55,7 +63,7 @@ def misfit_T(model, val, target_T):
     T = (2 * np.pi / val.imag) * model.t_star / (24. * 3600. * 365.25)
     return np.abs(T-target_T)/target_T
 
-def misfit_th_order(model, vec, target_th_order, oscillate=False, var='uth'):
+def misfit_th_order(model, vec, target_th_order, oscillate=False, var='uph'):
     zeros = len(get_theta_zero_crossings(model, vec, oscillate=oscillate, var=var))
     return np.abs(zeros-target_th_order)/max(1, target_th_order)
 
@@ -63,7 +71,7 @@ def misfit_r_order(model, vec, target_r_order, oscillate=False, var='uph'):
     zeros = len(get_r_zero_crossings(model, vec, oscillate=oscillate, var=var))
     return np.abs(zeros-target_r_order)/max(1, target_r_order)
 
-def misfit_region(model, vec, target_region, eq_cutoff, var='ur'):
+def misfit_region(model, vec, target_region, eq_cutoff, var='uph'):
     var_out = model.get_variable(vec, var)
     split = eq_cutoff
     noneq_power = abs(np.concatenate((var_out[:, :int((model.Nl-1)*(0.5-split/2.))],
@@ -71,15 +79,24 @@ def misfit_region(model, vec, target_region, eq_cutoff, var='ur'):
                                          axis=1)).sum()
     eq_power = abs(var_out[:, int((model.Nl-1)*(0.5-split/2.)):int((model.Nl-1)*(0.5+split/2.))]).sum()
     if target_region=='equator':
-        return eq_power/(noneq_power+eq_power)
-    else:
         return noneq_power/(noneq_power+eq_power)
+    else:
+        return eq_power/(noneq_power+eq_power)
 
-def misfit_symmetric(model, vec, var='ur'):
+def misfit_symmetric(model, vec, var='uph'):
     var_out = model.get_variable(vec, var)
     north_power = np.abs(var_out[:, model.Nl//2:]).sum()
     south_power = np.abs(var_out[:, :model.Nl//2]).sum()
-    return 1.-np.abs(north_power-south_power)/np.abs(north_power+south_power)
+    return np.abs(north_power-south_power)/np.abs(north_power+south_power)
+
+def misfit_smoothness_th(model, vec, var='uph'):
+    y = (model.get_variable(vec, var)).real
+    return np.sum((y[:,2:]+y[:,:-2]-2*y[:,1:-1])*(np.abs(y[:,2:])+np.abs(y[:,1:-1])+np.abs(y[:,:-2])))/np.sum(np.abs(y))
+
+def misfit_smoothness_r(model, vec, var='uph'):
+    y = (model.get_variable(vec, var)).real
+    return np.sum((y[2:,:]+y[:-2,:]-2*y[1:-1,:])*(np.abs(y[2:,:])+np.abs(y[1:-1,:])+np.abs(y[:-2,:])))/np.sum(np.abs(y))
+
 
 def apply_d2(model, vec):
     try:

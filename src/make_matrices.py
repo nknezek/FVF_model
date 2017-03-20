@@ -1,10 +1,10 @@
 #! /usr/bin/env python3
 
 import sys, os
-import FVF_plotlib as fplt
 import itertools as it
 import numpy as np
 import importlib
+import multiprocess as mp
 
 #%% Import configuration file
 default_config = "cfg_make_general"
@@ -24,7 +24,6 @@ except:
         raise ImportError("could not find a configuration file")
 
 #%% Store constant parameters
-flog = cfg.flog
 R = cfg.R
 Omega = cfg.Omega
 rho = cfg.rho
@@ -35,7 +34,7 @@ dir_suf = cfg.dir_suf
 ep = cfg.ep
 
 # create list of all combinations of iteratable parameters
-iter_param_names = ['m', 'Nk', 'Nl', 'h', 'nu', 'eta', 'dCyr', 'B_type', 'Bd', 'Br', 'Bth', 'const', 'Bmax', 'Bmin', 'sin_exp', 'Uphi', 'buoy_type', 'buoy_ratio', 'fvf', 'Bnoise']
+iter_param_names = ['m', 'Nk', 'Nl', 'h', 'nu', 'eta', 'dCyr', 'B_type', 'Bd', 'Br', 'Bth', 'const', 'Bmax', 'Bmin', 'sin_exp', 'Uphi', 'buoy_type', 'buoy_ratio', 'model_type', 'Bnoise']
 iter_params = {}
 for name in iter_param_names:
     value = eval('cfg.'+name)
@@ -45,7 +44,16 @@ for name in iter_param_names:
 varNames = sorted(iter_params)
 combinations = [ dict(zip(varNames, prod)) for prod in it.product(*(iter_params[varName] for varName in varNames))]
 
-for c in combinations:
+def make_matrix(c):
+    '''
+    :param c: dictionary of parameters
+    :return:
+    '''
+    import FVF_loglib as flog
+    import FVF_plotlib as fplt
+
+    exec('import {0} as fvf'.format(c['model_type']))
+
     # Store Parameters for this model run
     m = c['m']
     Nk = c['Nk']
@@ -64,7 +72,6 @@ for c in combinations:
     sin_exp = c['sin_exp']
     buoy_type = c['buoy_type']
     buoy_ratio = c['buoy_ratio']
-    fvf = c['fvf']
     Uphi = c['Uphi']
     Bnoise = c['Bnoise']
 
@@ -81,7 +88,8 @@ for c in combinations:
     physical_constants = {'R': R, 'Omega': Omega, 'rho': rho,
                           'h': h, 'nu': nu, 'eta': eta,
                           'mu_0': mu_0, 'g': g}
-    model = fvf.Model(model_variables, model_parameters, physical_constants)
+    # have to call fvf from the locals() dict direction, as for some reason exec during multiprocess doesn't update the local namespace
+    model = locals()['fvf'].Model(model_variables, model_parameters, physical_constants)
     model.set_B_by_type(B_type=B_type, Bd=Bd, Br=Br, Bth=Bth, const=const, Bmax=Bmax, Bmin=Bmin, sin_exp=sin_exp, noise=Bnoise)
     model.set_buoy_by_type(buoy_type=buoy_type, buoy_ratio=buoy_ratio)
     if type(dCyr) == (float or int):
@@ -135,10 +143,6 @@ for c in combinations:
     #==============================================================================
     model.make_Bobs()
     print('created Bobs matrix')
-#    model.make_d2Mat()
-#    print('created D3sq matrix')
-#    model.make_dthMat()
-#    print('created dth matrix')
 
     #%% Save Model Information
     #==============================================================================
@@ -158,4 +162,9 @@ for c in combinations:
     model.save_mat_PETSc(dir_name+fileA+str(dCyr)+'.dat', model.A.toPETSc(epsilon=epA))
     print('saved PETSc A matrix for dCyr = {0} to '.format(dCyr) + str(dir_name))
 
-    # import pickle; pickle.dump(model.A.todense(), open('A_py3matrix.p','wb')); pickle.dump(model.B.todense(), open('B_py3matrix.p','wb'));
+    return
+
+if __name__ == '__main__':
+    procs = mp.cpu_count()
+    p = mp.Pool(processes=procs)
+    p.map(make_matrix, combinations)

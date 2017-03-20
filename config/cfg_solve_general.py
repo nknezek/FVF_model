@@ -2,13 +2,12 @@
 import numpy as np
 """ Configuration File for SLEPc Run solving MAC model """
 
-T_list = [80.1]
-delta_T = 30.
+T_list = [20., 60., 80.1, 100.,]
 
 nev = 10
 num_to_keep = 10
 
-eq_split = 1.0
+eq_split = 0.5
 target_r_order = 0
 target_th_order = 0
 target_Q = 5.
@@ -22,6 +21,8 @@ wt_region = 1.
 wt_sym = 1.
 
 eq_var = 'p'
+r_ord_var = 'p'
+th_ord_var = 'p'
 real_var = 'ur'
 
 filemodel = 'model.p'
@@ -35,7 +36,6 @@ plot_B_obs = False
 plot_vel = True
 
 tol = 1e-8
-
 
 dCyr_list = [68.44627]
 data_dir = [

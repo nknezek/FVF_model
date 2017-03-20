@@ -1,9 +1,9 @@
 #! /usr/bin/env python3
 
 import numpy as np
-import MAC_model as fvf
-import FVF_loglib as flog
-import pickle as pkl
+
+# model type
+model_type = "MAC_model"
 
 # mode to simulate (longitudinal)
 m = [0]
@@ -14,7 +14,7 @@ Nl = 20 # Latitudinal cells
 
 # Define Physical Constants
 R = 3480e3  # Outer core radius in (m)
-h = [139.2e3]  # layer thickness in (m)
+h = [100.0e3, 139.2e3]  # layer thickness in (m)
 Omega = 2*np.pi/(23.9345*3600.0)  # rotation rate in (rad/s)
 rho = 1.e4   # density in (kg/m^3)
 nu = [0.8]   # momentum diffusivity in (m^2/s)
@@ -23,8 +23,8 @@ eta = 0.8  # magnetic diffusivity in (m^2/s)
 eta_th = 0.0
 mu_0 = 4.*np.pi*10.**-7  # vacuum permeability in (kg*m/(A^2s^2))
 g = 10.  # Gravity in m/s^2
-dCyr = [68.44627]
-
+# dCyr = [2.5,5.,10.,20.,40.,60.,80.,160.,240.,320.,640.,960.,]
+dCyr = [50.]
 # background magnetic field in (Tesla)
 # chocies: dipole, dipoleBr, absDipole, absDipoleBr, constantBr, set, sinfuncBr
 B_type = 'absDipoleBr'

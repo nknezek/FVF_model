@@ -2,12 +2,11 @@ import numpy as np
 import scipy.sparse
 from numpy import sin, cos, tan
 import sys
+import petsc4py
+petsc4py.init()
 import slepc4py
-slepc4py.init(sys.argv)
-from petsc4py import PETSc
-from slepc4py import SLEPc
-opts = PETSc.Options()
-import pickle as pkl
+slepc4py.init()
+import dill
 
 class Model():
     '''
@@ -317,21 +316,21 @@ class Model():
         setattr(self, name, GovEquation(self, variable))
 
     def setup_SLEPc(self, nev=10, Target=None, Which='TARGET_MAGNITUDE'):
-        self.EPS = SLEPc.EPS().create()
-        self.EPS.setDimensions(10, PETSc.DECIDE)
+        self.EPS = slepc4py.SLEPc.EPS().create()
+        self.EPS.setDimensions(10, petsc4py.PETSc.DECIDE)
         self.EPS.setOperators(self.A_SLEPc, self.M_SLEPc)
-        self.EPS.setProblemType(SLEPc.EPS.ProblemType.PGNHEP)
+        self.EPS.setProblemType(slepc4py.SLEPc.EPS.ProblemType.PGNHEP)
         self.EPS.setTarget(Target)
         self.EPS.setWhichEigenpairs(eval('self.EPS.Which.'+Which))
         self.EPS.setFromOptions()
         self.ST = self.EPS.getST()
-        self.ST.setType(SLEPc.ST.Type.SINVERT)
+        self.ST.setType(slepc4py.SLEPc.ST.Type.SINVERT)
         return self.EPS
 
     def solve_SLEPc(self, Target=None):
         self.EPS.solve()
         conv = self.EPS.getConverged()
-        vs, ws = PETSc.Mat.getVecs(self.A_SLEPc)
+        vs, ws = petsc4py.PETSc.Mat.getVecs(self.A_SLEPc)
         vals = []
         vecs = []
         for ind in range(conv):
@@ -342,34 +341,34 @@ class Model():
     def save_mat_PETSc(self, filename, mat, type='Binary'):
         ''' Saves a Matrix in PETSc format '''
         if type == 'Binary':
-            viewer = PETSc.Viewer().createBinary(filename, 'w')
+            viewer = petsc4py.PETSc.Viewer().createBinary(filename, 'w')
         elif type == 'ASCII':
-            viewer = PETSc.Viewer().createASCII(filename, 'w')
+            viewer = petsc4py.PETSc.Viewer().createASCII(filename, 'w')
         viewer(mat)
 
     def load_mat_PETSc(self, filename, type='Binary'):
         ''' Loads and returns a Matrix stored in PETSc format '''
         if type == 'Binary':
-            viewer = PETSc.Viewer().createBinary(filename, 'r')
+            viewer = petsc4py.PETSc.Viewer().createBinary(filename, 'r')
         elif type == 'ASCII':
-            viewer = PETSc.Viewer().createASCII(filename, 'r')
-        return PETSc.Mat().load(viewer)
+            viewer = petsc4py.PETSc.Viewer().createASCII(filename, 'r')
+        return petsc4py.PETSc.Mat().load(viewer)
 
     def save_vec_PETSc(self, filename, vec, type='Binary'):
         ''' Saves a vector in PETSc format '''
         if type == 'Binary':
-            viewer = PETSc.Viewer().createBinary(filename, 'w')
+            viewer = petsc4py.PETSc.Viewer().createBinary(filename, 'w')
         elif type == 'ASCII':
-            viewer = PETSc.Viewer().createASCII(filename, 'w')
+            viewer = petsc4py.PETSc.Viewer().createASCII(filename, 'w')
         viewer(vec)
 
     def load_vec_PETSc(self, filename, type='Binary'):
         ''' Loads and returns a vector stored in PETSc format '''
         if type == 'Binary':
-            viewer = PETSc.Viewer().createBinary(filename, 'r')
+            viewer = petsc4py.PETSc.Viewer().createBinary(filename, 'r')
         elif type == 'ASCII':
-            viewer = PETSc.Viewer().createASCII(filename, 'r')
-        return PETSc.Mat().load(viewer)
+            viewer = petsc4py.PETSc.Viewer().createASCII(filename, 'r')
+        return petsc4py.PETSc.Mat().load(viewer)
 
     def save_model(self, filename):
         ''' Saves the model structure without the computed A and M matrices'''
@@ -388,7 +387,7 @@ class Model():
             M = self.M
             del self.M
 
-        pkl.dump(self, open(filename, 'wb'))
+        dill.dump(self, open(filename, 'wb'))
 
         try:
             A
@@ -478,7 +477,7 @@ class Model():
         E = self.E
         Pm = self.Pm
 
-        # ddr
+        # radial derivative arrays
         self.ddr_kp1 = rp**2/(2*r**2*dr)
         self.ddr_km1 = -rm**2/(2*r**2*dr)
         self.ddr = 1/r
@@ -499,7 +498,7 @@ class Model():
         self.ddr_km1_bd0[0,:] = np.zeros(Nl)
         self.ddr_bd0[0,:] = (rp[0,:]**2 - 2*rm[0,:]**2)/(2*r[0,:]**2*dr)
 
-        # ddr for Conducting core boundary conditions
+        # radial derivatives for Conducting core boundary conditions
         self.ddr_kp1_ccb0 = np.array(self.ddr_kp1_b0)
         self.ddr_kp1_ccb0[0,:] = rp[0,:]**2/(r[0,:]**2*2*dr)
         self.ddr_km1_ccb0 = np.array(self.ddr_km1_b0)
@@ -508,15 +507,15 @@ class Model():
         self.ddr_ccb0[0,:] = rp[0,:]**2/(r[0,:]**2*2*dr)
         self.ddr_u_ccb0 = -rm[0,:]**2/(r[0,:]**2*dr)
 
-        # ddth
+        # theta derivatives
         self.ddth_lp1 = sin(thp)/(2*r*sin(th)*dth)
         self.ddth_lm1 = -sin(thm)/(2*r*sin(th)*dth)
         self.ddth = (sin(thp)-sin(thm))/(2*r*sin(th)*dth)
 
-        # ddph
+        # phi derivatives
         self.ddph = 1j*m/(r*sin(th))
 
-        # drP
+        # Pressure radial derivative
         self.drP_kp1 = rp**2/(2*dr*r**2)
         self.drP_km1 = -rm**2/(2*dr*r**2)
         self.drP_lp1 = -sin(thp)/(4*r*sin(th))
@@ -529,12 +528,12 @@ class Model():
         self.drP[0,:] = -rm[0,:]**2/(2*dr*r[0,:]**2) \
                         - (sin(thp[0,:]) + sin(thm[0,:]))/(4*r[0,:]*sin(th[0,:]))
 
-        # dthP
+        # Pressure th derivative
         self.dthP_lp1 = sin(thp)/(2*r*sin(th)*dth)
         self.dthP_lm1 = -sin(thm)/(2*r*sin(th)*dth)
         self.dthP = (sin(thp)-sin(thm))/(2*r*sin(th)*dth) - cos(th)/(r*sin(th))
 
-        # dphP
+        # Pressure phi derivative
         self.dphP = 1j*m/(r*sin(th))
 
         # Laplacian
@@ -862,7 +861,7 @@ class GovEquation():
 class csr_matrix(scipy.sparse.csr.csr_matrix):
     ''' Subclass to allow conversion to PETSc matrix format'''
     def toPETSc(self, epsilon=1e-12):
-        Mat = PETSc.Mat().createAIJ(size=self.shape)
+        Mat = petsc4py.PETSc.Mat().createAIJ(size=self.shape)
         Mat.setUp()
         dok_mat = self.todok()
         for (i, j), val in dok_mat.items():
@@ -898,7 +897,7 @@ class csr_matrix(scipy.sparse.csr.csr_matrix):
 class coo_matrix(scipy.sparse.coo.coo_matrix):
     ''' Subclass to allow conversion to PETSc matrix format'''
     def toPETSc(self, epsilon=1e-12):
-        Mat = PETSc.Mat().createAIJ(size=self.shape)
+        Mat = petsc4py.PETSc.Mat().createAIJ(size=self.shape)
         Mat.setUp()
         dok_mat = self.todok()
         for (i, j), val in dok_mat.items():
@@ -911,7 +910,9 @@ class coo_matrix(scipy.sparse.coo.coo_matrix):
         return Mat
 
     def toPETSc_unassembled(self, epsilon=1e-10):
-        Mat = PETSc.Mat().createAIJ(size=self.shape)
+        # import petsc4py
+        # opts = petsc4py.PETSc.Options()
+        Mat = petsc4py.PETSc.Mat().createAIJ(size=self.shape)
         Mat.setUp()
         dok_mat = self.todok()
         for (i, j), val in dok_mat.items():
@@ -970,3 +971,4 @@ class coo_matrix(scipy.sparse.coo.coo_matrix):
             A = csr_matrix((data, indices, indptr), shape=self.shape)
             A.sum_duplicates()
             return A
+
