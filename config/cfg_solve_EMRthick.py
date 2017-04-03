@@ -2,8 +2,8 @@
 import numpy as np
 """ Configuration File for SLEPc Run solving MAC model """
 
-T_list = [970.]
-delta_T = 970.
+T_list = [30., 100., 300., 900.]
+delta_T = 900.
 
 nev = 200
 
