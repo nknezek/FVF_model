@@ -1,12 +1,11 @@
 #! /usr/bin/env python3
-
 import numpy as np
-import macmodel_bdiv as mac
-import macloglib as mlog
-import pickle as pkl
+
+# model type
+model_type = "MAC_model"
 
 # mode to simulate (longitudinal)
-m = [6]
+m = [0]
 
 # Size of grid
 Nk = 20 # Radial cells
@@ -18,21 +17,19 @@ h = [135e3]  # layer thickness in (m)
 Omega = 2*np.pi/(23.9345*3600.0)  # rotation rate in (rad/s)
 rho = 1.e4   # density in (kg/m^3)
 nu = [1e-2]   # momentum diffusivity in (m^2/s)
-nu_th = 0.0
 eta = 0.8  # magnetic diffusivity in (m^2/s)
-eta_th = 0.0
 mu_0 = 4.*np.pi*10.**-7  # vacuum permeability in (kg*m/(A^2s^2))
 g = 10.  # Gravity in m/s^2
-dCyr = [65.]
-
+dCyr = [7., 15., 30.]
+# , 65., 150., 300., 600., 1200.
 # background magnetic field in (Tesla)
 # chocies: dipole, dipoleBr, absDipole, absDipoleBr, constantBr, set, sinfuncBr
 B_type = 'constantBr'
-
 B_mag = [0.62e-3]
 Bd = B_mag
 Br = B_mag
 Bth = None
+Bph = None
 const = 0.0
 Bmax = 0.0
 Bmin = 0.0

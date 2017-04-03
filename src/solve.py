@@ -74,6 +74,7 @@ combinations = [ dict(zip(varNames, prod)) for prod in it.product(*(iter_params[
 # Store main output directory
 out_dir_base = '../output/{0}_{1}/'.format(datetime.today().strftime("%Y-%m-%d_%H-%M-%S"), config_file[9:])
 
+
 def solve_for_combo(c):
     import FVF_loglib as flog
     import FVF_plotlib as fplt
@@ -84,13 +85,6 @@ def solve_for_combo(c):
     slepc4py.init()
     import dill
 
-    # Set up logger
-    logger = flog.setup_custom_logger(dir_name=out_dir_base, filename='run.log')
-
-    # Store config file for later reference
-    logger.info('used config file {0}.py'.format(config_file))
-    shutil.copyfile('../config/' + config_file + '.py', out_dir_base + config_file + '.py')
-    logger.info('Main output directory set to {0}'.format(out_dir_base))
 
     data_dir = c['data_dir']
     oscillate = c['oscillate']
@@ -108,10 +102,26 @@ def solve_for_combo(c):
         out_dir = out_dir_base + '{0}/{1}/{2}/{3}/'.format(m, N, B, H)
     else:
         out_dir = out_dir_base
-    logger.info('\n\nParameter Set, m = {0}, H = {1}, B = {2}, N = {3} \n'.format(m, H, B, N))
 
-    # for tnum,T in enumerate(T_list):
-    logger.info('\n\nTarget T={0:.1f} yrs'.format(T))
+
+    # Set out_dir
+    if(len(cfg.T_list)>1):
+        print('setting custom directory for T={0}'.format(T))
+        out_dir_T = out_dir+'{0:.2f}/'.format(T)
+    else:
+        out_dir_T = out_dir
+    flog.ensure_dir(out_dir_T)
+
+    # Set up logger
+    logger = flog.setup_custom_logger(dir_name=out_dir_T, filename='run.log')
+
+    # Store config file for later reference
+    logger.info('used config file {0}.py'.format(config_file))
+    shutil.copyfile('../config/' + config_file + '.py', out_dir_base + config_file + '.py')
+    logger.info('Main output directory set to {0}'.format(out_dir_base))
+
+    logger.info('\n\nParameter Set, m = {0}, H = {1}, B = {2}, N = {3}, T={4} \n'.format(m, H, B, N, T))
+    logger.info('Output subdirectory set to {0}'.format(out_dir_T))
 
     # Convert Time in years to model frequency
     t_star = (23.9345*3600)/(2*np.pi)
@@ -122,13 +132,6 @@ def solve_for_combo(c):
     dCyr_use = find_closest_CC(T, dCyr_list)
     logger.info('{0} dCyr used'.format(dCyr_use))
 
-    # Set out_dir
-    if(len(cfg.T_list)>1):
-        out_dir_T = out_dir+'{0:.2f}/'.format(T)
-    else:
-        out_dir_T = out_dir
-    flog.ensure_dir(out_dir_T)
-    logger.info('out_dir set to {0}'.format(out_dir_T))
 
     # %% Load Matrices and model from files
     #==============================================================================
@@ -231,10 +234,13 @@ def solve_for_combo(c):
             Period = (2*np.pi/val.imag)*model.t_star/(24.*3600.*365.25)
             Decay = (2*np.pi/val.real)*model.t_star/(24.*3600.*365.25)
             Q = abs(val.imag/(2*val.real))
+            r_ord = fana.get_r_zero_crossings(model, vec, oscillate=oscillate, var=cfg.r_ord_var)
+            th_ord = fana.get_theta_zero_crossings(model, vec, oscillate=oscillate, var=cfg.th_ord_var)
+
             if abs(Period) < 1.0:
-                title = ('T{1:.2f}dys_Q{2:.2f}_{0:.0f}'.format(ind, Period*365.25, Q))
+                title = ('m={5}, l={4}, k={3}, T{1:.2f}dys_Q{2:.2f}_{0:.0f}'.format(ind, Period*365.25, Q, r_ord, th_ord, model.m))
             else:
-                title = ('T{1:.2f}yrs_Q{2:.2f}_{0:.0f}'.format(ind, Period, Q))
+                title = ('m={5}, l={4}, k={3}, T{1:.2f}yrs_Q{2:.2f}_{0:.0f}'.format(ind, Period, Q, r_ord, th_ord, model.m))
             if plot_vel:
                 if (model.Nk > 1):
                     fplt.plot_pcolormesh_rth(model, val, vec, dir_name=out_dir_T, title=title, physical_units=True, oscillate_values=oscillate)

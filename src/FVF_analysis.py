@@ -29,28 +29,44 @@ def misfit_result(model, val, vec, target_T=None, target_Q=None, target_r_order=
     mfsq = 0.
     nummf = 0.
     if target_T is not None:
-        mfsq += (misfit_T(model, val, target_T)*wt_T)**2
+        mf_T = misfit_T(model, val, target_T)
+        print("\n T mf = {0}".format(mf_T))
+        mfsq += (mf_T*wt_T)**2
         nummf +=1
     if target_Q is not None:
-        mfsq += (misfit_Q(model, val, target_Q)*wt_Q)**2
+        mf_Q = misfit_Q(model, val, target_Q)
+        print("Q mf = {0}".format(mf_Q))
+        mfsq += (mf_Q*wt_Q)**2
         nummf += 1
     if target_th_order is not None:
-        mfsq += (misfit_th_order(model, vec, target_th_order, oscillate=oscillate, var=th_ord_var)*wt_th_order)**2
+        mf_th_ord = misfit_th_order(model, vec, target_th_order, oscillate=oscillate, var=th_ord_var)
+        print("th ord mf = {0}".format(mf_th_ord))
+        mfsq += (mf_th_ord*wt_th_order)**2
         nummf +=1
     if target_r_order is not None:
-        mfsq += (misfit_r_order(model, vec, target_r_order, oscillate=oscillate, var=r_ord_var)*wt_r_order)**2
+        mf_r_ord = misfit_r_order(model, vec, target_r_order, oscillate=oscillate, var=r_ord_var)
+        print("r ord mf = {0}".format(mf_r_ord))
+        mfsq += (mf_r_ord*wt_r_order)**2
         nummf +=1
     if target_region is not None:
-        mfsq += (misfit_region(model, vec, target_region, eq_cutoff, var=eq_var)*wt_region)**2
+        mf_region = misfit_region(model, vec, target_region, eq_cutoff, var=eq_var)
+        print("region mf = {0}".format(mf_region))
+        mfsq += (mf_region*wt_region)**2
         nummf += 1
-    if target_symmetric is not None:
-        mfsq += (misfit_symmetric(model, vec, var=eq_var)*wt_sym)**2
+    if target_symmetric is True:
+        mf_sym = misfit_symmetric(model, vec, var=eq_var)
+        print("sym mf = {0}".format(mf_sym))
+        mfsq += (mf_sym*wt_sym)**2
         nummf += 1
     if wt_th_sm > 0.:
-        mfsq += (misfit_smoothness_th(model, vec, var=th_ord_var)*wt_th_sm)**2
+        mf_th_sm = misfit_smoothness_th(model, vec, var=th_ord_var)
+        print("th sm mf = {0}".format(mf_th_sm))
+        mfsq += (mf_th_sm*wt_th_sm)**2
         nummf +=1
     if wt_r_sm > 0.:
-        mfsq += (misfit_smoothness_r(model, vec, var=r_ord_var)*wt_r_sm)**2
+        mf_r_sm = misfit_smoothness_r(model, vec, var=r_ord_var)
+        print("r sm mf = {0}".format(mf_r_sm))
+        mfsq += (mf_r_sm*wt_r_sm)**2
         nummf +=1
     return (mfsq/nummf)**0.5
 
@@ -64,12 +80,12 @@ def misfit_T(model, val, target_T):
     return np.abs(T-target_T)/target_T
 
 def misfit_th_order(model, vec, target_th_order, oscillate=False, var='uph'):
-    zeros = len(get_theta_zero_crossings(model, vec, oscillate=oscillate, var=var))
-    return np.abs(zeros-target_th_order)/max(1, target_th_order)
+    zeros = get_theta_zero_crossings(model, vec, oscillate=oscillate, var=var)
+    return np.abs(zeros-target_th_order)/max(1, target_th_order)/4
 
 def misfit_r_order(model, vec, target_r_order, oscillate=False, var='uph'):
-    zeros = len(get_r_zero_crossings(model, vec, oscillate=oscillate, var=var))
-    return np.abs(zeros-target_r_order)/max(1, target_r_order)
+    zeros = get_r_zero_crossings(model, vec, oscillate=oscillate, var=var)
+    return np.abs(zeros-target_r_order)/max(1, target_r_order)/4
 
 def misfit_region(model, vec, target_region, eq_cutoff, var='uph'):
     var_out = model.get_variable(vec, var)
@@ -85,17 +101,17 @@ def misfit_region(model, vec, target_region, eq_cutoff, var='uph'):
 
 def misfit_symmetric(model, vec, var='uph'):
     var_out = model.get_variable(vec, var)
-    north_power = np.abs(var_out[:, model.Nl//2:]).sum()
-    south_power = np.abs(var_out[:, :model.Nl//2]).sum()
-    return np.abs(north_power-south_power)/np.abs(north_power+south_power)
+    north_power = np.mean(np.abs(var_out[:, model.Nl//2:]))
+    south_power = np.mean(np.abs(var_out[:, :model.Nl//2]))
+    return np.abs((north_power-south_power)/(north_power+south_power))*10
 
 def misfit_smoothness_th(model, vec, var='uph'):
     y = (model.get_variable(vec, var)).real
-    return np.sum((y[:,2:]+y[:,:-2]-2*y[:,1:-1])*(np.abs(y[:,2:])+np.abs(y[:,1:-1])+np.abs(y[:,:-2])))/np.sum(np.abs(y))
+    return np.mean(np.abs(y[:,2:]+y[:,:-2]-2*y[:,1:-1]))/np.mean(np.abs(y))
 
 def misfit_smoothness_r(model, vec, var='uph'):
     y = (model.get_variable(vec, var)).real
-    return np.sum((y[2:,:]+y[:-2,:]-2*y[1:-1,:])*(np.abs(y[2:,:])+np.abs(y[1:-1,:])+np.abs(y[:-2,:])))/np.sum(np.abs(y))
+    return np.mean(np.abs(y[2:,:]+y[:-2,:]-2*y[1:-1,:]))/np.mean(np.abs(y))
 
 
 def apply_d2(model, vec):
@@ -174,18 +190,18 @@ def get_theta_zero_crossings(model, vec, var='uth', oscillate=False):
     if oscillate:
         z[:,::2] = -z[:,::2]
     ind = np.argmax(np.mean(np.abs(z),axis=1))
-    signs = np.sign(z[ind,:])
+    signs = np.sign(z[ind,1:-1])
     zeros = np.where(signs[1:] != signs[:-1])[0]
-    return zeros
+    return len(zeros)
 
 def get_r_zero_crossings(model, vec, var='uph', oscillate=False):
     z = model.get_variable(vec, var)
     if oscillate:
-        z[:,:2] = -z[:,:2]
+        z[:,::2] = -z[:,::2]
     ind = np.argmax(np.mean(np.abs(z),axis=0))
-    signs = np.sign(z[:,ind])
+    signs = np.sign(z[1:-1,ind])
     zeros = np.where(signs[1:] != signs[:-1])[0]
-    return zeros
+    return len(zeros)
 
 def get_Q(model, val):
     return np.abs(val.imag/(2*val.real))
