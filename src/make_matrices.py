@@ -5,6 +5,7 @@ import itertools as it
 import numpy as np
 import importlib
 import multiprocess as mp
+import FVF_notify as fvn
 
 #%% Import configuration file
 default_config = "cfg_make_general"
@@ -169,4 +170,6 @@ if __name__ == '__main__':
     procs = mp.cpu_count()
     p = mp.Pool(processes=procs)
     p.map(make_matrix, combinations)
-
+    if cfg.notify_me_by_text:
+        cli = fvn.MessageClient()
+        cli.send_message('making {0} matrices using {1} is done!'.format(len(combinations), config_file))

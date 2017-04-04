@@ -54,3 +54,4 @@ data_dir = [
 
 
 
+notify_me_by_text = True

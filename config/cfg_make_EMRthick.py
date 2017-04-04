@@ -49,3 +49,5 @@ model_variables = ('ur', 'uth', 'uph', 'br', 'bth', 'bph', 'p', 'r_disp')
 boundary_variables = ('ur', 'uth', 'uph', 'br', 'bth', 'bph', 'p')
 dir_suf = '_EMRthick'
 ep = 1e-6
+
+notify_me_by_text = True

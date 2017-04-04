@@ -52,3 +52,5 @@ buoy_ratio =  [1.0]
 model_variables = ('ur', 'uth', 'uph', 'br', 'bth', 'bph', 'p', 'r_disp')
 dir_suf = '_Buffett'
 ep = 1e-3
+
+notify_me_by_text = True

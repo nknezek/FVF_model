@@ -45,3 +45,6 @@ dCyr_list = [65., 150., 300., 600., 1200.]
 data_dir = [
     '../data/k20_l200_m0_nu1e-02_135km_constantN80_constantBrB62_MAC/',
 ]
+
+
+notify_me_by_text = True

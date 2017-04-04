@@ -45,3 +45,5 @@ dCyr_list = [68.44627]
 data_dir = [
     '../data/k10_l20_m0_nu8e-01_139km_constantN100_absDipoleBrB31_general/',
 ]
+
+notify_me_by_text = True

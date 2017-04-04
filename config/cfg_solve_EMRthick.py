@@ -48,3 +48,5 @@ data_dir = [
     '../data/k60_l120_m6_nu1e-01_100km_constantN100_constantBrB62_EMRthick/'
 ]
 
+
+notify_me_by_text = True

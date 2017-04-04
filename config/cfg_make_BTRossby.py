@@ -51,3 +51,4 @@ model_variables = ('uth', 'uph', 'p')
 dir_suf = '_rossby'
 ep = 1e-8
 
+notify_me_by_text = True
