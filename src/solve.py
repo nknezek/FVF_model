@@ -274,6 +274,9 @@ if __name__ == '__main__':
     procs = mp.cpu_count()
     p = mp.Pool(processes=procs)
     p.map(solve_for_combo, combinations)
+    time = datetime.datetime.today().ctime()
+    message = 'finished solvimg {0} parameter sets using {1} at {2}'.format(len(combinations), config_file, time)
+    print(message)
     if cfg.notify_me_by_text:
         cli = fvn.MessageClient()
-        cli.send_message('solving {0} matrices using {1} is done!'.format(len(combinations), config_file))
+        cli.send_message(message)
