@@ -30,42 +30,42 @@ def misfit_result(model, val, vec, target_T=None, target_Q=None, target_r_order=
     nummf = 0.
     if target_T is not None:
         mf_T = misfit_T(model, val, target_T)
-        print("\n T mf = {0}".format(mf_T))
+        # print("\n T mf = {0}".format(mf_T))
         mfsq += (mf_T*wt_T)**2
         nummf +=1
     if target_Q is not None:
         mf_Q = misfit_Q(model, val, target_Q)
-        print("Q mf = {0}".format(mf_Q))
+        # print("Q mf = {0}".format(mf_Q))
         mfsq += (mf_Q*wt_Q)**2
         nummf += 1
     if target_th_order is not None:
         mf_th_ord = misfit_th_order(model, vec, target_th_order, oscillate=oscillate, var=th_ord_var)
-        print("th ord mf = {0}".format(mf_th_ord))
+        # print("th ord mf = {0}".format(mf_th_ord))
         mfsq += (mf_th_ord*wt_th_order)**2
         nummf +=1
     if target_r_order is not None:
         mf_r_ord = misfit_r_order(model, vec, target_r_order, oscillate=oscillate, var=r_ord_var)
-        print("r ord mf = {0}".format(mf_r_ord))
+        # print("r ord mf = {0}".format(mf_r_ord))
         mfsq += (mf_r_ord*wt_r_order)**2
         nummf +=1
     if target_region is not None:
         mf_region = misfit_region(model, vec, target_region, eq_cutoff, var=eq_var)
-        print("region mf = {0}".format(mf_region))
+        # print("region mf = {0}".format(mf_region))
         mfsq += (mf_region*wt_region)**2
         nummf += 1
     if target_symmetric is True:
         mf_sym = misfit_symmetric(model, vec, var=eq_var)
-        print("sym mf = {0}".format(mf_sym))
+        # print("sym mf = {0}".format(mf_sym))
         mfsq += (mf_sym*wt_sym)**2
         nummf += 1
     if wt_th_sm > 0.:
         mf_th_sm = misfit_smoothness_th(model, vec, var=th_ord_var)
-        print("th sm mf = {0}".format(mf_th_sm))
+        # print("th sm mf = {0}".format(mf_th_sm))
         mfsq += (mf_th_sm*wt_th_sm)**2
         nummf +=1
     if wt_r_sm > 0.:
         mf_r_sm = misfit_smoothness_r(model, vec, var=r_ord_var)
-        print("r sm mf = {0}".format(mf_r_sm))
+        # print("r sm mf = {0}".format(mf_r_sm))
         mfsq += (mf_r_sm*wt_r_sm)**2
         nummf +=1
     return (mfsq/nummf)**0.5

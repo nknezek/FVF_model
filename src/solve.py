@@ -73,6 +73,14 @@ for name in iter_param_names:
 varNames = sorted(iter_params)
 combinations = [ dict(zip(varNames, prod)) for prod in it.product(*(iter_params[varName] for varName in varNames))]
 
+
+def append_iter_num_to_combinations(combinations):
+    for i,c in enumerate(combinations):
+        c['iter_num']=i+1
+        c['total_iter'] = len(combinations)
+
+append_iter_num_to_combinations(combinations)
+
 # Store main output directory
 out_dir_base = '../output/{0}_{1}/'.format(datetime.today().strftime("%Y-%m-%d_%H-%M-%S"), config_file[9:])
 
@@ -87,6 +95,7 @@ def solve_for_combo(c):
     slepc4py.init()
     import dill
 
+    print('working on combination {0}/{1}'.format(c['iter_num'], c['total_iter']))
 
     data_dir = c['data_dir']
     oscillate = c['oscillate']
