@@ -21,6 +21,18 @@ def filter_by_misfit(model, vals, vecs, num_to_keep, target_T=None, target_Q=Non
         fvecs.append(vecs[sorted_ind[i]])
     return fvals, fvecs
 
+def filter_by_rth_zeros(model, vals, vecs):
+    max_th_zeros = model.Nl//2+1
+    max_r_zeros = model.Nk//2+1
+    fvals = []
+    fvecs = []
+    for val, vec in zip(vals, vecs):
+        if get_theta_zero_crossings(model, vec) <= max_th_zeros:
+            if get_r_zero_crossings(model, vec) <= max_r_zeros:
+                fvals.append(val)
+                fvecs.append(vec)
+    return fvals, fvecs
+
 
 def misfit_result(model, val, vec, target_T=None, target_Q=None, target_r_order=0, target_th_order=0, target_region='equator',
                           eq_cutoff=0.5, target_symmetric=True,oscillate=False,

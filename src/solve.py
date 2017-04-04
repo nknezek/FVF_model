@@ -217,8 +217,11 @@ def solve_for_combo(c):
         vecs = vecs_tmp
         logger.info('\t{0} eigenvectors shifted so that {1} is real to plot'.format(len(vecs), real_var))
 
+        # filter by number of r/th zero crossings
+        fvals, fvecs = fana.filter_by_rth_zeros(model, vals, vecs)
+        # print('filtered out {0} eigenvectors because of too many zeros'.format(len(vals)-len(fvals)))
         # Filter by fit to given parameter choices
-        fvals, fvecs = fana.filter_by_misfit(model, vals, vecs, num_to_keep, target_T=T, target_Q=target_Q,
+        fvals, fvecs = fana.filter_by_misfit(model, fvals, fvecs, num_to_keep, target_T=T, target_Q=target_Q,
                                             target_th_order=target_th_order, target_r_order=target_r_order,
                                             target_region=cfg.target_region, eq_cutoff=0.5, target_symmetric=True,
                                             oscillate=False, wt_T=wt_T, wt_Q=wt_Q, wt_r_order=wt_r_order,
@@ -274,7 +277,7 @@ if __name__ == '__main__':
     procs = mp.cpu_count()
     p = mp.Pool(processes=procs)
     p.map(solve_for_combo, combinations)
-    time = datetime.datetime.today().ctime()
+    time = datetime.today().ctime()
     message = 'finished solvimg {0} parameter sets using {1} at {2}'.format(len(combinations), config_file, time)
     print(message)
     if cfg.notify_me_by_text:
