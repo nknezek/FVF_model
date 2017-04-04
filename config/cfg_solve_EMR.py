@@ -49,3 +49,6 @@ data_dir = [
     '../data/k20_l200_m6_nu1e-02_100km_constantN100_constantBrB62_EMR/',
     '../data/k20_l200_m6_nu1e-02_140km_constantN100_constantBrB62_EMR/',
 ]
+
+notify_me_by_text = True
+verbose = False

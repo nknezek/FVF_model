@@ -10,7 +10,7 @@ def ensure_dir(f):
         except:
             pass
 
-def setup_custom_logger(dir_name='./',filename='MAC.log'):
+def setup_custom_logger(dir_name='./',filename='MAC.log', verbose=True):
     ensure_dir(dir_name)
     formatter = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(module)s - %(message)s')
 
@@ -22,7 +22,8 @@ def setup_custom_logger(dir_name='./',filename='MAC.log'):
 
     logger = logging.getLogger(dir_name)
     logger.setLevel(logging.DEBUG)
-    logger.addHandler(handler)
+    if verbose:
+        logger.addHandler(handler)
     logger.addHandler(fileHandler)
     return logger
 

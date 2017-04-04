@@ -13,7 +13,8 @@ sys.path.append('../config')
 try:
     config_file = os.path.splitext(sys.argv[1])[0]
     cfg = importlib.import_module(config_file)
-    print("used config file from command line {0}".format(config_file))
+    if cfg.verbose:
+        print("used config file from command line {0}".format(config_file))
 except:
     try:
         config_file = default_config
@@ -46,6 +47,12 @@ for name in iter_param_names:
 varNames = sorted(iter_params)
 combinations = [ dict(zip(varNames, prod)) for prod in it.product(*(iter_params[varName] for varName in varNames))]
 
+def append_iter_num_to_combinations(combinations):
+    for i,c in enumerate(combinations):
+        c['iter_num']=i+1
+        c['total_iter'] = len(combinations)
+
+append_iter_num_to_combinations(combinations)
 def make_matrix(c):
     '''
     :param c: dictionary of parameters
@@ -55,6 +62,8 @@ def make_matrix(c):
     import FVF_plotlib as fplt
 
     exec('import {0} as fvf'.format(c['model_type']))
+
+    print('working on combination {0}/{1}'.format(c['iter_num'], c['total_iter']))
 
     # Store Parameters for this model run
     m = c['m']
@@ -103,18 +112,22 @@ def make_matrix(c):
 
     flog.ensure_dir(dir_name)
 
-    print('done setting up model')
+    if cfg.verbose:
+        print('done setting up model')
 
     # %% Save Model info
     #==============================================================================
     fplt.plot_buoy_struct(model, dir_name=dir_name)
-    print('plotted buoyancy structure')
+    if cfg.verbose:
+        print('plotted buoyancy structure')
     fplt.plot_B(model, dir_name=dir_name)
-    print('plotted background magnetic field structure')
+    if cfg.verbose:
+        print('plotted background magnetic field structure')
     fplt.plot_Uphi(model, dir_name=dir_name)
-    print('plotted background Uphi structure')
+    if cfg.verbose:
+        print('plotted background Uphi structure')
 
-    logger = flog.setup_custom_logger(dir_name=dir_name, filename='model.log')
+    logger = flog.setup_custom_logger(dir_name=dir_name, filename='model.log', verbose=cfg.verbose)
     logger.info('\n' +
     "Model Information:\n" +
     "from config file: {0}".format(config_file) + '\n\n' +
@@ -139,30 +152,37 @@ def make_matrix(c):
     'buoy_ratio = ' + str(buoy_ratio) +'\n' +
     'model variables = ' + str(model.model_variables) + '\n'
     )
-    print('model will be saved in ' + str(dir_name))
+    if cfg.verbose:
+        print('model will be saved in ' + str(dir_name))
 
     #%% Make matricies used for later analysis
     #==============================================================================
     model.make_Bobs()
-    print('created Bobs matrix')
+    if cfg.verbose:
+        print('created Bobs matrix')
 
     #%% Save Model Information
     #==============================================================================
     model.save_model(dir_name + filemodel)
-    print('saved model to ' + str(dir_name))
+    if cfg.verbose:
+        print('saved model to ' + str(dir_name))
 
     #%% Create Matrices
     #===============================================================================
     model.make_B()
-    print('created B matrix')
+    if cfg.verbose:
+        print('created B matrix')
     epB = np.min(np.abs(model.B.data[np.nonzero(model.B.data)]))*ep
     model.save_mat_PETSc(dir_name+fileB+'.dat', model.B.toPETSc(epsilon=epB))
-    print('saved PETSc B matrix ' + str(dir_name))
+    if cfg.verbose:
+        print('saved PETSc B matrix ' + str(dir_name))
     model.make_A()
-    print('created A matrix')
+    if cfg.verbose:
+        print('created A matrix')
     epA = np.min(np.abs(model.A.data[np.nonzero(model.A.data)]))*ep
     model.save_mat_PETSc(dir_name+fileA+str(dCyr)+'.dat', model.A.toPETSc(epsilon=epA))
-    print('saved PETSc A matrix for dCyr = {0} to '.format(dCyr) + str(dir_name))
+    if cfg.verbose:
+        print('saved PETSc A matrix for dCyr = {0} to '.format(dCyr) + str(dir_name))
 
     return
 

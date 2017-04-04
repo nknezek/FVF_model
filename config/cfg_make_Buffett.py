@@ -54,3 +54,4 @@ dir_suf = '_Buffett'
 ep = 1e-3
 
 notify_me_by_text = True
+verbose = False

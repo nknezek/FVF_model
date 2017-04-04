@@ -15,7 +15,8 @@ sys.path.append('../config')
 try:
     config_file = os.path.splitext(sys.argv[1])[0]
     cfg = importlib.import_module(config_file)
-    print("used config file from command line {0}".format(config_file))
+    if cfg.verbose:
+        print("used config file from command line {0}".format(config_file))
 except:
     try:
         config_file = default_config
@@ -107,14 +108,15 @@ def solve_for_combo(c):
 
     # Set out_dir
     if(len(cfg.T_list)>1):
-        print('setting custom directory for T={0}'.format(T))
+        if cfg.verbose:
+            print('setting custom directory for T={0}'.format(T))
         out_dir_T = out_dir+'{0:.2f}/'.format(T)
     else:
         out_dir_T = out_dir
     flog.ensure_dir(out_dir_T)
 
     # Set up logger
-    logger = flog.setup_custom_logger(dir_name=out_dir_T, filename='run.log')
+    logger = flog.setup_custom_logger(dir_name=out_dir_T, filename='run.log', verbose=cfg.verbose)
 
     # Store config file for later reference
     logger.info('used config file {0}.py'.format(config_file))

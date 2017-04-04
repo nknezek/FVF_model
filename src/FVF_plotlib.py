@@ -266,7 +266,7 @@ def plot_pcolormesh_rth(model,val,vec,dir_name='./',title='pcolormesh MAC Wave P
         p = axes[ind*3+1].pcolormesh(thpl,rpl,var_data.imag.T, cmap='RdBu',vmin=-var_max, vmax=var_max)
         axes[ind*3+1].get_yaxis().set_ticks([])
         plt.colorbar(p, format='%.0e', cax=axes[ind*3+2], ticks=np.linspace(-var_max,var_max,4))
-    fig.tight_layout()
+    fig.set_tight_layout(True)
     plt.subplots_adjust(top=0.95)
 #    plt.show()
     plt.savefig(dir_name+title+'.png')
@@ -328,7 +328,7 @@ def plot_vel_AGU(model,vec,dir_name='./',title='Velocity for AGU', physical_unit
     p = plt.pcolormesh(thpl,rpl,bph.real, cmap='RdBu',vmin=-bphmax, vmax=bphmax)
     plt.colorbar(p, format='%.0e', ticks=np.linspace(-bphmax,bphmax,4))
 
-    fig.tight_layout()
+    fig.set_tight_layout(True)
     plt.subplots_adjust(top=0.9)
     # plt.savefig(dir_name+title+'.png')
 
@@ -339,7 +339,7 @@ def plot_buoy_struct(model, dir_name='./', title='buoyancy_structure'):
     plt.subplot(1,2,1)
     drho = np.zeros((model.Nk,1))
     for i in range(0,model.Nk):
-        drho[i] = sum(model.dr*model.r_star*drho_dr[:i,model.Nl/2])
+        drho[i] = sum(model.dr*model.r_star*drho_dr[:i,model.Nl//2])
     plt.plot(drho,((model.r[:,0]-1)*model.r_star)/1000)
 #    plt.plot(drho_dr[:,model.Nl/2]*1e6,(model.r[:,0]-1)*model.r_star/1000)
     plt.title('density perturbation off adiabat')
@@ -351,7 +351,7 @@ def plot_buoy_struct(model, dir_name='./', title='buoyancy_structure'):
     plt.title('buoyancy frequency')
     plt.ylabel('depth below CMB (km)')
     plt.xlabel('buoyancy frequency (omega_g/Omega)')
-    fig.tight_layout()
+    fig.set_tight_layout(True)
     plt.savefig(dir_name+title+'.png')
 
 def plot_B(model, dir_name='./', title='B field structure'):
@@ -378,7 +378,7 @@ def plot_B(model, dir_name='./', title='B field structure'):
     plt.title('B_phi background field')
     plt.ylabel('B_phi in (10^-3 T)')
     plt.xlabel('colatitude in degrees')
-    fig.tight_layout()
+    fig.set_tight_layout(True)
     plt.savefig(dir_name+title+'.png')
 
 def plot_Uphi(model, dir_name='./', title='Uphi structure'):
@@ -389,7 +389,7 @@ def plot_Uphi(model, dir_name='./', title='Uphi structure'):
     plt.title('Uphi background velocity field')
     plt.ylabel('depth below CMB (km)')
     plt.xlabel('colatitude in degrees')
-    fig.tight_layout()
+    fig.set_tight_layout(True)
     plt.savefig(dir_name+title+'.png')
 
 
