@@ -23,6 +23,7 @@ except:
     except:
         raise ImportError("could not find a configuration file")
 
+
 #%% Store constant parameters
 R = cfg.R
 Omega = cfg.Omega

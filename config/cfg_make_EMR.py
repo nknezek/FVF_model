@@ -13,14 +13,14 @@ Nl = 200 # Latitudinal cells
 
 # Define Physical Constants
 R = 3480e3  # Outer core radius in (m)
-h = [75e3, 100e3]  # layer thickness in (m)
+h = [50e3, 75e3, 100e3, 140e3]  # layer thickness in (m)
 Omega = 2*np.pi/(23.9345*3600.0)  # rotation rate in (rad/s)
 rho = 1.e4   # density in (kg/m^3)
 nu = [1e-2]   # momentum diffusivity in (m^2/s)
 eta = 0.8  # magnetic diffusivity in (m^2/s)
 mu_0 = 4.*np.pi*10.**-7  # vacuum permeability in (kg*m/(A^2s^2))
 g = 10.  # Gravity in m/s^2
-dCyr = [30.]
+dCyr = [35., 75., 150., 600.]
 # dCyr = [65., 150., 300., 600.]
 
 # background magnetic field in (Tesla)

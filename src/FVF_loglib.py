@@ -5,7 +5,10 @@ import os
 def ensure_dir(f):
     d = os.path.dirname(f)
     if not os.path.exists(d):
-        os.makedirs(d)
+        try:
+            os.makedirs(d)
+        except:
+            pass
 
 def setup_custom_logger(dir_name='./',filename='MAC.log'):
     ensure_dir(dir_name)

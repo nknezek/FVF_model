@@ -2,10 +2,10 @@
 import numpy as np
 """ Configuration File for SLEPc Run solving MAC model """
 
-T_list = [-13., 13]
+T_list = [-13., 13, -60., 60., -131, 131]
 
-nev = 140
-num_to_keep = 40
+nev = 200
+num_to_keep = 50
 
 eq_split = 0.5
 target_r_order = 2
@@ -42,9 +42,10 @@ tol = 1e-8
 
 
 # dCyr_list = [7., 15., 30., 65., 150., 300., 600.]
-dCyr_list = [30.]
+dCyr_list = [35., 75., 150., 600.]
 data_dir = [
-    # '../data/k20_l200_m6_nu1e-02_50km_constantN100_constantBrB62_EMR/',
+    '../data/k20_l200_m6_nu1e-02_50km_constantN100_constantBrB62_EMR/',
     '../data/k20_l200_m6_nu1e-02_75km_constantN100_constantBrB62_EMR/',
-    '../data/k20_l200_m6_nu1e-02_100km_constantN100_constantBrB62_EMR/'
+    '../data/k20_l200_m6_nu1e-02_100km_constantN100_constantBrB62_EMR/',
+    '../data/k20_l200_m6_nu1e-02_140km_constantN100_constantBrB62_EMR/',
 ]

@@ -1,12 +1,11 @@
 #! /usr/bin/env python3
-
 import numpy as np
-import MAC_model as fvf
-import FVF_loglib as flog
-import pickle as pkl
+
+# model type
+model_type = "BTRossby_model"
 
 # mode to simulate (longitudinal)
-m = [2]
+m = [3,6]
 
 # Size of grid
 Nk = 60 # Radial cells
@@ -14,13 +13,11 @@ Nl = 120 # Latitudinal cells
 
 # Define Physical Constants
 R = 3480e3  # Outer core radius in (m)
-h = [100e3]  # layer thickness in (m)
+h = [60e3, 100e3]  # layer thickness in (m)
 Omega = 2*np.pi/(23.9345*3600.0)  # rotation rate in (rad/s)
 rho = 1.e4   # density in (kg/m^3)
 nu = [1e-1]   # momentum diffusivity in (m^2/s)
-nu_th = 0.0
 eta = 0.8  # magnetic diffusivity in (m^2/s)
-eta_th = 0.0
 mu_0 = 4.*np.pi*10.**-7  # vacuum permeability in (kg*m/(A^2s^2))
 g = 10.  # Gravity in m/s^2
 dCyr = [30., 100., 300., 900.]
@@ -50,5 +47,5 @@ buoy_ratio =  [1.0]
 # model parameters
 model_variables = ('ur', 'uth', 'uph', 'br', 'bth', 'bph', 'p', 'r_disp')
 boundary_variables = ('ur', 'uth', 'uph', 'br', 'bth', 'bph', 'p')
-dir_suf = '_EMRThick'
-ep = 1e-5
+dir_suf = '_EMRthick'
+ep = 1e-6
