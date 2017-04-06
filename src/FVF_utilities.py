@@ -1,6 +1,7 @@
 import os
 import shutil
-
+import sys
+import importlib
 
 def get_directory_name(param_dict, include_nu=False):
     c = param_dict
@@ -39,3 +40,16 @@ def ensure_dir(f):
 
 def store_config_file(config_file, out_dir_base):
     shutil.copyfile('../config/' + config_file + '.py', out_dir_base + config_file + '.py')
+
+def find_available_skin_depths(directory):
+    dC_list = []
+    for file in os.listdir(directory):
+        if file.startswith("A"):
+            if file.endswith(".dat"):
+                dC_list.append(float(file[1:-4]))
+    return dC_list
+
+# function to find nearest skin-depth value for a wave period
+def find_closest_CC(Target, dCyr_list):
+    dist = [abs(x-abs(Target)) for x in dCyr_list]
+    return dCyr_list[dist.index(min(dist))]

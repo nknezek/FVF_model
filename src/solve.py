@@ -9,6 +9,7 @@ import importlib
 import shutil
 import FVF_notify as fvn
 
+
 # Import configuration file
 default_config = "cfg_solve_general"
 sys.path.append('../config')
@@ -27,13 +28,8 @@ except:
     except:
         raise ImportError("Could not import config file")
 
-# function to find nearest skin-depth value for a wave period
-def find_closest_CC(Target, dCyr_list):
-    dist = [abs(x-abs(Target)) for x in dCyr_list]
-    return dCyr_list[dist.index(min(dist))]
 
 # Import constant parameters from config file
-
 wt_T=cfg.wt_T
 nev = cfg.nev
 target_Q = cfg.target_Q
@@ -53,7 +49,6 @@ real_var = cfg.real_var
 filemodel = cfg.filemodel
 fileA = cfg.fileA
 fileB = cfg.fileB
-dCyr_list = cfg.dCyr_list
 savefile = cfg.savefile
 
 plot_robinson = cfg.plot_robinson
@@ -82,7 +77,7 @@ def append_iter_num_to_combinations(combinations):
 append_iter_num_to_combinations(combinations)
 
 # Store main output directory
-out_dir_base = '../output/{0}_{1}/'.format(datetime.today().strftime("%Y-%m-%d_%H-%M-%S"), config_file[9:])
+out_dir_base = '../output/{0}_{1}/'.format(datetime.today().strftime("%Y-%m-%d_%H-%M-%S"), config_file.split('_')[-1])
 
 
 def solve_for_combo(c):
@@ -113,8 +108,6 @@ def solve_for_combo(c):
     futil.store_config_file(config_file, out_dir_base)
 
     logger.info('Main output directory set to {0}'.format(out_dir_base))
-
-    logger.info('\n\nParameter Set, m = {0}, H = {1}, B = {2}, N = {3}, T={4} \n'.format(m, H, B, N, T))
     logger.info('Output subdirectory set to {0}'.format(out_dir))
 
     # Convert Time in years to model frequency
@@ -123,7 +116,8 @@ def solve_for_combo(c):
     Target = Target_j + Target_j*1j/(2*target_Q)
 
     # Find which CC matrix to use
-    dCyr_use = find_closest_CC(T, dCyr_list)
+    dCyr_list = futil.find_available_skin_depths(data_dir)
+    dCyr_use = futil.find_closest_CC(T, dCyr_list)
     logger.info('{0} dCyr used'.format(dCyr_use))
 
 

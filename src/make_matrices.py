@@ -111,7 +111,7 @@ def make_matrix(c):
     model.set_Uphi(Uphi)
     model.make_operators()
 
-    flog.ensure_dir(dir_name)
+    futil.ensure_dir(dir_name)
 
     if cfg.verbose:
         print('done setting up model')

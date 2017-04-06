@@ -42,10 +42,7 @@ tol = 1e-8
 
 dCyr_list = [35., 600.]
 data_dir = [
-    '../data/k4_l10_m6_nu1e-02_50km_constantN100_constantBrB50_test/',
-    '../data/k4_l10_m6_nu1e-02_50km_constantN100_constantBrB62_test/',
-    '../data/k4_l10_m6_nu1e-02_140km_constantN100_constantBrB50_test/',
-    '../data/k4_l10_m6_nu1e-02_140km_constantN100_constantBrB62_test/',
+    '../data/m6_50km_1.00N_constantBr_0.50mTBr_0.50mTBd_4k_10l/'
 ]
 
 notify_me_by_text = True
