@@ -272,6 +272,7 @@ def solve_for_combo(c):
         logger.info('run complete')
     except:
         logger.error("Problem Plotting Eigenvalues.", exc_info=1)
+    print('done with combination {0}/{1}'.format(c['iter_num'], c['total_iter']))
 
 if __name__ == '__main__':
     procs = mp.cpu_count()

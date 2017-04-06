@@ -38,7 +38,7 @@ dir_suf = cfg.dir_suf
 ep = cfg.ep
 
 # create list of all combinations of iteratable parameters
-iter_param_names = ['m', 'Nk', 'Nl', 'h', 'nu', 'eta', 'dCyr', 'B_type', 'Bd', 'Br', 'Bth', 'const', 'Bmax', 'Bmin', 'sin_exp', 'Uphi', 'buoy_type', 'buoy_ratio', 'model_type', 'Bnoise']
+iter_param_names = ['m', 'Nk', 'Nl', 'h', 'nu', 'eta', 'dCyr', 'B_type', 'Bd', 'Br', 'Bth', 'const', 'Bmax', 'Bmin', 'sin_exp', 'Uphi', 'buoy_type', 'buoy_ratio', 'model_type', 'noise']
 iter_params = {}
 for name in iter_param_names:
     value = eval('cfg.'+name)
@@ -85,11 +85,11 @@ def make_matrix(c):
     buoy_type = c['buoy_type']
     buoy_ratio = c['buoy_ratio']
     Uphi = c['Uphi']
-    Bnoise = c['Bnoise']
+    noise = c['noise']
 
     # Directory name to save model
     dir_name = ('../data/k'+str(Nk) + '_l' + str(Nl) +
-                '_m{1:.0f}_nu{2:.0e}_{3:.0f}km_{7}N{4:.0f}_{6}B{5:.0f}{8}/'.format(dCyr, m, nu, h/1e3, buoy_ratio*100., Br*1e5, B_type, buoy_type, dir_suf))
+                '_m{1:.0f}_nu{2:.0e}_{3:.0f}km_{7}N{4:.0f}_{6}B{5:.0f}_Bn{9:.0f}{8}/'.format(dCyr, m, nu, h/1e3, buoy_ratio*100., Bd*1e5, B_type, buoy_type, dir_suf, noise*1e5))
     filemodel = 'model.p' # name of model in directory
     fileA = 'A' # name of A matrix data
     fileB = 'B' # name of M matrix data
@@ -102,7 +102,7 @@ def make_matrix(c):
                           'mu_0': mu_0, 'g': g}
     # have to call fvf from the locals() dict direction, as for some reason exec during multiprocess doesn't update the local namespace
     model = locals()['fvf'].Model(model_variables, model_parameters, physical_constants)
-    model.set_B_by_type(B_type=B_type, Bd=Bd, Br=Br, Bth=Bth, const=const, Bmax=Bmax, Bmin=Bmin, sin_exp=sin_exp, noise=Bnoise)
+    model.set_B_by_type(B_type=B_type, Bd=Bd, Br=Br, Bth=Bth, const=const, Bmax=Bmax, Bmin=Bmin, sin_exp=sin_exp, noise=noise)
     model.set_buoy_by_type(buoy_type=buoy_type, buoy_ratio=buoy_ratio)
     if type(dCyr) == (float or int):
         model.set_CC_skin_depth(dCyr)
@@ -184,6 +184,7 @@ def make_matrix(c):
     model.save_mat_PETSc(dir_name+fileA+str(dCyr)+'.dat', model.A.toPETSc(epsilon=epA))
     if cfg.verbose:
         print('saved PETSc A matrix for dCyr = {0} to '.format(dCyr) + str(dir_name))
+    print('done with combination {0}/{1}'.format(c['iter_num'], c['total_iter']))
 
     return
 

@@ -145,25 +145,13 @@ class Model():
         self.set_Bph(0.0)
         return None
 
-    def set_Br_abs_dipole(self, Bd, const=0, noise=None, N=10000):
+    def set_Br_abs_dipole(self, Bd, const=0, noise=0):
         ''' Sets the background Br magnetic field the absolute value of a
         dipole with Bd = dipole constant in Tesla.
         optionally, can offset the dipole by a constant with const or add numerical noise with noise '''
-        if noise:     
-            from scipy.special import erf
-            def folded_mean(mu, s):
-                return s*(2/np.pi)**0.5*np.exp(-mu**2/(2*s**2)) - mu*erf(-mu/(2*s**2)**0.5)
-            self.Bd = Bd
-            Bdip = 2*Bd*np.abs(np.cos(self.th))
-            Bdip_noise = np.zeros_like(Bdip)
-            for (i,B) in enumerate(Bdip):
-                Bdip_noise[i] = folded_mean(Bdip[i], noise)
-            self.BrT = np.ones((self.Nk, self.Nl))*Bdip_noise
-            self.Br = self.BrT/self.B_star
-        else:
-            self.Bd = Bd
-            self.BrT = 2*abs(cos(self.th))*Bd + const
-            self.Br = self.BrT/self.B_star
+        self.Bd = Bd
+        self.BrT = np.sqrt((Bd*np.cos(self.th))**2+noise**2) + const
+        self.Br = self.BrT/self.B_star
         self.set_Bth(0.0)
         self.set_Bph(0.0)
         return None
