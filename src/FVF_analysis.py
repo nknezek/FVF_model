@@ -3,13 +3,13 @@ import numpy as np
 
 def filter_by_misfit(model, vals, vecs, num_to_keep, target_T=None, target_Q=None, target_r_order=0, target_th_order=0,
                      target_region='equator', th_ord_var ='uph', r_ord_var ='uph', eq_var='uph',
-                     eq_cutoff=0.5, target_symmetric=True,oscillate=False,
+                     eq_cutoff=0.5, target_symmetric=True,
                      wt_T=1., wt_Q=1., wt_th_order=1., wt_r_order=1., wt_region=1., wt_sym=1., wt_r_sm=1., wt_th_sm=1.):
     mf = np.zeros(len(vals))
     for i,(val, vec) in enumerate(zip(vals, vecs)):
         mf[i] = misfit_result(model, val, vec, target_T=target_T, target_Q=target_Q, target_r_order=target_r_order,
                                    target_th_order=target_th_order, target_region=target_region,
-                                   eq_cutoff=eq_cutoff, target_symmetric=target_symmetric, oscillate=oscillate,
+                                   eq_cutoff=eq_cutoff, target_symmetric=target_symmetric,
                                 th_ord_var=th_ord_var, r_ord_var=r_ord_var, eq_var=eq_var,
                                    wt_T=wt_T, wt_Q=wt_Q, wt_r_order=wt_r_order, wt_th_order=wt_th_order,
                                     wt_region=wt_region, wt_sym=wt_sym, wt_r_sm=wt_r_sm, wt_th_sm=wt_th_sm)
@@ -35,7 +35,7 @@ def filter_by_rth_zeros(model, vals, vecs):
 
 
 def misfit_result(model, val, vec, target_T=None, target_Q=None, target_r_order=0, target_th_order=0, target_region='equator',
-                          eq_cutoff=0.5, target_symmetric=True,oscillate=False,
+                          eq_cutoff=0.5, target_symmetric=True,
                         th_ord_var ='uph', r_ord_var ='uph', eq_var='uph',
                           wt_T=1., wt_Q=1., wt_r_order=1., wt_th_order=1., wt_region=1., wt_sym=1., wt_r_sm=1, wt_th_sm=1.):
     mfsq = 0.
@@ -51,12 +51,12 @@ def misfit_result(model, val, vec, target_T=None, target_Q=None, target_r_order=
         mfsq += (mf_Q*wt_Q)**2
         nummf += 1
     if target_th_order is not None:
-        mf_th_ord = misfit_th_order(model, vec, target_th_order, oscillate=oscillate, var=th_ord_var)
+        mf_th_ord = misfit_th_order(model, vec, target_th_order,  var=th_ord_var)
         # print("th ord mf = {0}".format(mf_th_ord))
         mfsq += (mf_th_ord*wt_th_order)**2
         nummf +=1
     if target_r_order is not None:
-        mf_r_ord = misfit_r_order(model, vec, target_r_order, oscillate=oscillate, var=r_ord_var)
+        mf_r_ord = misfit_r_order(model, vec, target_r_order,  var=r_ord_var)
         # print("r ord mf = {0}".format(mf_r_ord))
         mfsq += (mf_r_ord*wt_r_order)**2
         nummf +=1
@@ -91,12 +91,12 @@ def misfit_T(model, val, target_T):
     T = (2 * np.pi / val.imag) * model.t_star / (24. * 3600. * 365.25)
     return np.abs(T-target_T)/target_T
 
-def misfit_th_order(model, vec, target_th_order, oscillate=False, var='uph'):
-    zeros = get_theta_zero_crossings(model, vec, oscillate=oscillate, var=var)
+def misfit_th_order(model, vec, target_th_order,  var='uph'):
+    zeros = get_theta_zero_crossings(model, vec,  var=var)
     return np.abs(zeros-target_th_order)/max(1, target_th_order)/4
 
-def misfit_r_order(model, vec, target_r_order, oscillate=False, var='uph'):
-    zeros = get_r_zero_crossings(model, vec, oscillate=oscillate, var=var)
+def misfit_r_order(model, vec, target_r_order,  var='uph'):
+    zeros = get_r_zero_crossings(model, vec,  var=var)
     return np.abs(zeros-target_r_order)/max(1, target_r_order)/4
 
 def misfit_region(model, vec, target_region, eq_cutoff, var='uph'):
@@ -197,19 +197,15 @@ def shift_vec_real(model, vec, var='ur'):
     else:
         return vec*np.exp(-1j*avg_ang)
 
-def get_theta_zero_crossings(model, vec, var='uth', oscillate=False):
+def get_theta_zero_crossings(model, vec, var='uth'):
     z = model.get_variable(vec, var)
-    if oscillate:
-        z[:,::2] = -z[:,::2]
     ind = np.argmax(np.mean(np.abs(z),axis=1))
     signs = np.sign(z[ind,1:-1])
     zeros = np.where(signs[1:] != signs[:-1])[0]
     return len(zeros)
 
-def get_r_zero_crossings(model, vec, var='uph', oscillate=False):
+def get_r_zero_crossings(model, vec, var='uph'):
     z = model.get_variable(vec, var)
-    if oscillate:
-        z[:,::2] = -z[:,::2]
     ind = np.argmax(np.mean(np.abs(z),axis=0))
     signs = np.sign(z[1:-1,ind])
     zeros = np.where(signs[1:] != signs[:-1])[0]
@@ -218,7 +214,7 @@ def get_r_zero_crossings(model, vec, var='uph', oscillate=False):
 def get_Q(model, val):
     return np.abs(val.imag/(2*val.real))
 
-def filter_by_theta_zeros(model, vals, vecs, zeros_wanted, var='uth', verbose=False, oscillate=False):
+def filter_by_theta_zeros(model, vals, vecs, zeros_wanted, var='uth', verbose=False):
     if type(zeros_wanted) is not list:
         zeros_wanted = list(zeros_wanted)
     if verbose:
@@ -226,7 +222,7 @@ def filter_by_theta_zeros(model, vals, vecs, zeros_wanted, var='uth', verbose=Fa
     filtered_vals = []
     filtered_vecs = []
     for ind,(val, vec) in enumerate(zip(vals, vecs)):
-        zc = get_theta_zero_crossings(model, vec, var=var, oscillate=oscillate)
+        zc = get_theta_zero_crossings(model, vec, var=var)
         if verbose:
             print("{0}: val= {1}, zc = {2}".format(ind, val, zc))
         if len(zc)-1 in zeros_wanted:

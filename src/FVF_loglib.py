@@ -1,17 +1,9 @@
 import logging
 import os
-
-
-def ensure_dir(f):
-    d = os.path.dirname(f)
-    if not os.path.exists(d):
-        try:
-            os.makedirs(d)
-        except:
-            pass
+import FVF_utilities as futil
 
 def setup_custom_logger(dir_name='./',filename='MAC.log', verbose=True):
-    ensure_dir(dir_name)
+    futil.ensure_dir(dir_name)
     formatter = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(module)s - %(message)s')
 
     handler = logging.StreamHandler()

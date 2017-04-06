@@ -104,7 +104,7 @@ def plot_mollyweide(model,vec,val,m,l,v_scale=1.0):
    plt.title('MAC, Mollweide Projection Vector Field for m={0}, l={1}'.format(m,l))
    plt.savefig('./output/m={1}/MAC_MollweideVectorField_m={1}_l={2}.png'.format(val.imag,m,l))
 
-def plot_B_obs(model, vec, m, oscillate=False, dir_name='./', title='B-Perturbation at Core Surface'):
+def plot_B_obs(model, vec, m, dir_name='./', title='B-Perturbation at Core Surface'):
    from mpl_toolkits.basemap import Basemap
    Nl = model.Nl
    th = model.th[0,:]
@@ -114,8 +114,6 @@ def plot_B_obs(model, vec, m, oscillate=False, dir_name='./', title='B-Perturbat
    projtype = 'robin'
    ## Create full vector grid in theta and phi
    Bobsth = model.get_variable(model.BobsMat.tocsr()*vec, 'ur')[-1,:]
-   if oscillate:
-       Bobsth[::2] = Bobsth[::2]*-1
    Nph = 2*Nl
    ph = np.linspace(-180.,180.-360./Nph,Nph)
    lon_grid, lat_grid = np.meshgrid(ph,th*180./np.pi-90.,)
@@ -133,7 +131,7 @@ def plot_B_obs(model, vec, m, oscillate=False, dir_name='./', title='B-Perturbat
    plt.title(title)
    plt.savefig(dir_name+title+'.png')
 
-def plot_robinson(model, vec, m, v_scale=1.0, oscillate=False, dir_name='./', title='Velocity and Divergence at CMB'):
+def plot_robinson(model, vec, m, v_scale=1.0, dir_name='./', title='Velocity and Divergence at CMB'):
    from mpl_toolkits.basemap import Basemap
    E = model.E
    Nk = model.Nk
@@ -146,9 +144,6 @@ def plot_robinson(model, vec, m, v_scale=1.0, oscillate=False, dir_name='./', ti
    ## Create full vector grid in theta and phi
    u_1D = model.get_variable(vec,'uph')[0][-1,:]
    v_1D = model.get_variable(vec,'uth')[0][-1,:]
-   if oscillate:
-       u_1D[::2] = u_1D[::2]*-1
-       v_1D[::2] = v_1D[::2]*-1
    Nph = 2*Nl
    ph = np.linspace(-180.,180.-360./Nph,Nph)
    lon_grid, lat_grid = np.meshgrid(ph,th*180./np.pi-90.,)
@@ -215,7 +210,7 @@ def plot_M(M,m):
     plt.grid()
     plt.savefig('./output/m={0}/M_matrix_m={0}.png'.format(m))
 
-def plot_pcolormesh_rth(model,val,vec,dir_name='./',title='pcolormesh MAC Wave Plot', physical_units = False, oscillate_values=False):
+def plot_pcolormesh_rth(model,val,vec,dir_name='./',title='pcolormesh MAC Wave Plot', physical_units = False):
     plt.close('all')
     r_star = model.r_star
     P_star = model.P_star
@@ -235,8 +230,6 @@ def plot_pcolormesh_rth(model,val,vec,dir_name='./',title='pcolormesh MAC Wave P
         gs_data_list.append(gridspec.GridSpecFromSubplotSpec(1, 2, subplot_spec=gs[ind*2], wspace=0.01))
 
         var_data = model.get_variable(vec, var)
-        if oscillate_values:
-            var_data[:,::2] = var_data[:,::2]*-1
         axes.append(plt.subplot(gs_data_list[ind][0]))
         axes.append(plt.subplot(gs_data_list[ind][1]))
         axes.append(plt.subplot(gs[ind*2+1]))
@@ -271,7 +264,7 @@ def plot_pcolormesh_rth(model,val,vec,dir_name='./',title='pcolormesh MAC Wave P
 #    plt.show()
     plt.savefig(dir_name+title+'.png')
 
-def plot_vel_AGU(model,vec,dir_name='./',title='Velocity for AGU', physical_units = False, oscillate_values=False):
+def plot_vel_AGU(model,vec,dir_name='./',title='Velocity for AGU', physical_units = False):
     var2plt = ['ur','uth','uph','bth','bph']
     plt.close('all')
     r_star = model.r_star

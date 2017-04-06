@@ -90,9 +90,6 @@ def make_matrix(c):
 
     # Directory name to save model
     dir_name = futil.get_directory_name(c)
-    # dir_name = ('../data/k{0}l{1}m{2}_{3}km_{4}Om_{5}_{5:}mT'
-    #     '../data/k'+str(Nk) + '_l' + str(Nl) +
-    #             '_m{1:.0f}_nu{2:.0e}_{3:.0f}km_{7}N{4:.0f}_{6}B{5:.0f}_Bn{9:.0f}{8}/'.format(dCyr, m, nu, h/1e3, buoy_ratio*100., Bd*1e5, B_type, buoy_type, dir_suf, noise*1e5))
     filemodel = 'model.p' # name of model in directory
     fileA = 'A' # name of A matrix data
     fileB = 'B' # name of M matrix data

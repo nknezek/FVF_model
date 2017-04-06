@@ -63,7 +63,7 @@ plot_vel = cfg.plot_vel
 tol = cfg.tol
 
 # Iterate over parameters that can vary
-iter_param_names = ['data_dir', 'oscillate', 'T_list']
+iter_param_names = ['data_dir', 'T_list']
 iter_params = {}
 for name in iter_param_names:
     value = eval('cfg.'+name)
@@ -89,6 +89,7 @@ def solve_for_combo(c):
     import FVF_loglib as flog
     import FVF_plotlib as fplt
     import FVF_analysis as fana
+    import FVF_utilities as futil
     import petsc4py
     petsc4py.init()
     import slepc4py
@@ -98,42 +99,23 @@ def solve_for_combo(c):
     print('working on combination {0}/{1}'.format(c['iter_num'], c['total_iter']))
 
     data_dir = c['data_dir']
-    oscillate = c['oscillate']
     T = c['T_list']
 
-    # Get information on layer thickness, buoyancy frequency, and magnetic field from data directory
-    data_dir_info = data_dir.strip('/').split('_')
-    m = data_dir_info[2]
-    H = data_dir_info[4]
-    N = data_dir_info[5]
-    B = data_dir_info[6]
-
     # Set up directory to store solution data
-    if(len(cfg.data_dir) > 1):
-        out_dir = out_dir_base + '{0}/{1}/{2}/{3}/'.format(m, N, B, H)
-    else:
-        out_dir = out_dir_base
-
-
-    # Set out_dir
-    if(len(cfg.T_list)>1):
-        if cfg.verbose:
-            print('setting custom directory for T={0}'.format(T))
-        out_dir_T = out_dir+'{0:.2f}/'.format(T)
-    else:
-        out_dir_T = out_dir
-    flog.ensure_dir(out_dir_T)
+    out_dir = futil.get_out_dir(out_dir_base, data_dir, len(cfg.data_dir), T, len(cfg.T_list))
+    futil.ensure_dir(out_dir)
 
     # Set up logger
-    logger = flog.setup_custom_logger(dir_name=out_dir_T, filename='run.log', verbose=cfg.verbose)
+    logger = flog.setup_custom_logger(dir_name=out_dir, filename='run.log', verbose=cfg.verbose)
 
     # Store config file for later reference
     logger.info('used config file {0}.py'.format(config_file))
-    shutil.copyfile('../config/' + config_file + '.py', out_dir_base + config_file + '.py')
+    futil.store_config_file(config_file, out_dir_base)
+
     logger.info('Main output directory set to {0}'.format(out_dir_base))
 
     logger.info('\n\nParameter Set, m = {0}, H = {1}, B = {2}, N = {3}, T={4} \n'.format(m, H, B, N, T))
-    logger.info('Output subdirectory set to {0}'.format(out_dir_T))
+    logger.info('Output subdirectory set to {0}'.format(out_dir))
 
     # Convert Time in years to model frequency
     t_star = (23.9345*3600)/(2*np.pi)
@@ -224,7 +206,7 @@ def solve_for_combo(c):
         fvals, fvecs = fana.filter_by_misfit(model, fvals, fvecs, num_to_keep, target_T=T, target_Q=target_Q,
                                             target_th_order=target_th_order, target_r_order=target_r_order,
                                             target_region=cfg.target_region, eq_cutoff=0.5, target_symmetric=True,
-                                            oscillate=False, wt_T=wt_T, wt_Q=wt_Q, wt_r_order=wt_r_order,
+                                             wt_T=wt_T, wt_Q=wt_Q, wt_r_order=wt_r_order,
                                              wt_th_order=wt_th_order, wt_region=wt_region, wt_sym=wt_sym,
                                              wt_r_sm=cfg.wt_r_sm, wt_th_sm=cfg.wt_th_sm,
                                              th_ord_var=cfg.th_ord_var, r_ord_var=cfg.r_ord_var, eq_var=cfg.eq_var)
@@ -236,8 +218,8 @@ def solve_for_combo(c):
     #==============================================================================
     try:
         if savefile:
-            dill.dump({'vals': fvals, 'vecs': fvecs, 'model':model},open(out_dir_T + savefile, 'wb'))
-            logger.info('vals and vecs saved to ' + out_dir_T + savefile)
+            dill.dump({'vals': fvals, 'vecs': fvecs, 'model':model},open(out_dir + savefile, 'wb'))
+            logger.info('vals and vecs saved to ' + out_dir + savefile)
     except:
         logger.error("Problem Saving Filtered Eigenvalues.", exc_info=1)
 
@@ -249,8 +231,8 @@ def solve_for_combo(c):
             Period = (2*np.pi/val.imag)*model.t_star/(24.*3600.*365.25)
             Decay = (2*np.pi/val.real)*model.t_star/(24.*3600.*365.25)
             Q = abs(val.imag/(2*val.real))
-            r_ord = fana.get_r_zero_crossings(model, vec, oscillate=oscillate, var=cfg.r_ord_var)
-            th_ord = fana.get_theta_zero_crossings(model, vec, oscillate=oscillate, var=cfg.th_ord_var)
+            r_ord = fana.get_r_zero_crossings(model, vec, var=cfg.r_ord_var)
+            th_ord = fana.get_theta_zero_crossings(model, vec, var=cfg.th_ord_var)
 
             if abs(Period) < 1.0:
                 title = ('m={5}, l={4}, k={3}, T{1:.2f}dys_Q{2:.2f}_{0:.0f}'.format(ind, Period*365.25, Q, r_ord, th_ord, model.m))
@@ -258,16 +240,16 @@ def solve_for_combo(c):
                 title = ('m={5}, l={4}, k={3}, T{1:.2f}yrs_Q{2:.2f}_{0:.0f}'.format(ind, Period, Q, r_ord, th_ord, model.m))
             if plot_vel:
                 if (model.Nk > 1):
-                    fplt.plot_pcolormesh_rth(model, val, vec, dir_name=out_dir_T, title=title, physical_units=True, oscillate_values=oscillate)
+                    fplt.plot_pcolormesh_rth(model, val, vec, dir_name=out_dir, title=title, physical_units=True)
                 else:
                     if('br' in model.model_variables):
-                        fplt.plot_1D(model, vec, val, ind, dir_name=out_dir_T, title=title)
+                        fplt.plot_1D(model, vec, val, ind, dir_name=out_dir, title=title)
                     else:
-                        fplt.plot_1D_noB(model, vec, val, ind, dir_name=out_dir_T, title=title)
+                        fplt.plot_1D_noB(model, vec, val, ind, dir_name=out_dir, title=title)
             if plot_robinson:
-                fplt.plot_robinson(model, vec, model.m, oscillate=oscillate, dir_name=out_dir_T, title=str(ind)+'_T{0:.2f}yrs_'.format(Period)+'Divergence')
+                fplt.plot_robinson(model, vec, model.m,  dir_name=out_dir, title=str(ind)+'_T{0:.2f}yrs_'.format(Period)+'Divergence')
             if plot_B_obs:
-                fplt.plot_B_obs(model, vec, model.m, oscillate=oscillate, dir_name=out_dir_T, title=title+'_Bperturb')
+                fplt.plot_B_obs(model, vec, model.m,  dir_name=out_dir, title=title+'_Bperturb')
             logger.info('\t plotted ind={0}, T={1:.2f}yrs (eig={2:.2e})'.format(ind, Period, val))
         logger.info('run complete')
     except:

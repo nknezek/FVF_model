@@ -33,7 +33,6 @@ fileA = 'A'
 fileB = 'B'
 savefile = 'data.p'
 
-oscillate = False
 plot_robinson = False
 plot_B_obs = False
 plot_vel = True
