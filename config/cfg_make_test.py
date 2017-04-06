@@ -35,7 +35,7 @@ const = 0.0
 Bmax = 0.0
 Bmin = 0.0
 sin_exp = 0.0
-Bnoise = 0.0
+noise = 0.0
 
 # background velocity field in (m/s)
 Uphi = 0.0
