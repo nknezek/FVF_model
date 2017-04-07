@@ -39,11 +39,10 @@ plot_vel = True
 
 tol = 1e-8
 
-
-dCyr_list = [35., 600.]
 data_dir = [
-    '../data/m6_50km_1.00N_constantBr_0.50mTBr_0.50mTBd_4k_10l/'
+    '../data/m6_140km_1.00N_constant_0.62mTBr_4k_10l/'
 ]
 
 notify_me_by_text = True
 verbose = False
+num_threads = None

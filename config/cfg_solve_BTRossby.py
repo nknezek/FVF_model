@@ -55,3 +55,4 @@ data_dir = [
 
 notify_me_by_text = True
 verbose = False
+num_threads = None

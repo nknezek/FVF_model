@@ -101,69 +101,36 @@ class Model():
         else:
             raise TypeError("BphT must either be an int, float, or np.ndarray of correct size")
 
-    def set_Br_dipole(self, Bd, const=0):
+    def set_B_dipole(self, Bd, Brconst=0., use_Bth=False, Bthconst=0.):
         ''' Sets the background magnetic field to a dipole field with
         Bd = dipole constant in Tesla '''
         self.Bd = Bd
-        self.BrT = 2*cos(self.th)*Bd + const
+        self.BrT = cos(self.th)*Bd + Brconst
         self.Br = self.BrT/self.B_star
-        self.set_Bth(0.0)
-        self.set_Bph(0.0)
-
-        return None
-
-    def set_B_dipole(self, Bd, const=0):
-        ''' Sets the background magnetic field to a dipole field with
-        Bd = dipole constant in Tesla '''
-        self.Bd = Bd
-        self.BrT = 2*cos(self.th)*Bd + const
-        self.Br = self.BrT/self.B_star
-        self.BthT = sin(self.th)*Bd + const
-        self.Bth = self.BthT/self.B_star
+        if use_Bth:
+            self.BthT = sin(self.th)*Bd + Bthconst
+            self.Bth = self.BthT/self.B_star
+        else:
+            self.set_Bth(0.0)
         self.set_Bph(0.0)
         return None
 
-    def set_B_abs_dipole(self, Bd, const=0):
+    def set_B_abs_dipole(self, Bd, Brnoise=0., Brconst=0., use_Bth=False, Bthnoise=0., Bthconst=0.):
         ''' Sets the background magnetic Br and Bth field to the absolute value of a
         dipole field with Bd = dipole constant in Tesla '''
         self.Bd = Bd
-        self.BrT = 2*abs(cos(self.th))*Bd + const
+        self.BrT = np.sqrt((Bd*cos(self.th))**2+Brnoise**2) + Brconst
         self.Br = self.BrT/self.B_star
-        self.BthT = abs(sin(self.th))*Bd + const
-        self.Bth = self.BthT/self.B_star
+        if use_Bth:
+            self.BthT = np.sqrt((Bd*np.sin(self.th))**2 + Bthnoise**2) + Bthconst
+            self.Bth = self.BthT/self.B_star
+        else:
+            self.set_Bth(0.0)
         self.set_Bph(0.0)
         return None
 
-    def set_B_dipole_absrsymth(self, Bd, const=0):
-        ''' Sets the background magnetic Br and Bth field to the absolute value of a
-        dipole field with Bd = dipole constant in Tesla '''
-        self.Bd = Bd
-        self.BrT = 2*abs(cos(self.th))*Bd + const
-        self.Br = self.BrT/self.B_star
-        self.BthT = sin(self.th)*Bd + const
-        self.Bth = self.BthT/self.B_star
-        self.set_Bph(0.0)
-        return None
-
-    def set_Br_abs_dipole(self, Bd, const=0, noise=0):
-        ''' Sets the background Br magnetic field the absolute value of a
-        dipole with Bd = dipole constant in Tesla.
-        optionally, can offset the dipole by a constant with const or add numerical noise with noise '''
-        self.Bd = Bd
-        self.BrT = np.sqrt((Bd*np.cos(self.th))**2+noise**2) + const
-        self.Br = self.BrT/self.B_star
-        self.set_Bth(0.0)
-        self.set_Bph(0.0)
-        return None
-
-    def set_Br_sinfunc(self, Bmin, Bmax, sin_exp=2.5):
-        self.BrT = ((1-sin(self.th)**sin_exp)*(Bmax-Bmin)+Bmin)
-        self.Br = self.BrT/self.B_star
-        self.set_Bth(0.0)
-        self.set_Bph(0.0)
-        return None
-
-    def set_B_by_type(self, B_type, Bd=0.0, Br=0.0, Bth=0.0, Bph=0.0, const=0.0, Bmin=0.0, Bmax=0.0, sin_exp=2.5, noise=0.0):
+    def set_B_by_type(self, B_type, Bd=0., Br=0., Bth=0., Bph=0., use_Bth=False,
+                      Brconst=0., Brnoise=0., Bthconst=0., Bthnoise=0.):
         ''' Sets the background magnetic field to given type.
         B_type choices:
             * dipole : Br, Bth dipole; specify scalar dipole constant Bd (T)
@@ -175,25 +142,18 @@ class Model():
             * dipole_absrsymth : absolute value of dipole in Br, symmetric in Bth, specify scalar Bd (T)
         '''
         if B_type == 'dipole':
-            self.set_B_dipole(Bd, const=const)
-        elif B_type == 'dipoleBr':
-            self.set_Br_dipole(Bd, const=const)
-        elif B_type == 'constantBr':
+            self.set_B_dipole(Bd, Brconst=Brconst, use_Bth=use_Bth, Bthconst=Bthconst)
+        elif B_type == 'constant':
             self.set_Br(Br*np.ones((self.Nk, self.Nl)))
-            self.set_Bth(0.0)
-            self.set_Bph(0.0)
+            self.set_Bth(Bth*np.ones((self.Nk, self.Nl)))
+            self.set_Bph(Bph*np.ones((self.Nk, self.Nl)))
+        elif B_type == 'abs_dipole':
+            self.set_B_abs_dipole(Bd, Brnoise=Brnoise, Brconst=Brconst,
+                                  use_Bth=use_Bth, Bthnoise=Bthnoise, Bthconst=Bthconst)
         elif B_type == 'set':
             self.set_Br(Br)
             self.set_Bth(Bth)
             self.set_Bph(Bph)
-        elif B_type == 'absDipoleBr':
-            self.set_Br_abs_dipole(Bd, const=const, noise=noise)
-        elif B_type == 'absDipole':
-            self.set_B_abs_dipole(Bd, const=const)
-        elif B_type == 'dipoleAbsRSymTh':
-            self.set_B_dipole_absrsymth(Bd, const=const)
-        elif B_type == 'sinfuncBr':
-            self.set_Br_sinfunc(Bmin, Bmax, sin_exp=sin_exp)
         else:
             raise ValueError('B_type not valid')
 

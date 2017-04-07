@@ -25,19 +25,23 @@ mu_0 = 4.*np.pi*10.**-7  # vacuum permeability in (kg*m/(A^2s^2))
 g = 10.  # Gravity in m/s^2
 # dCyr = [2.5,5.,10.,20.,40.,60.,80.,160.,240.,320.,640.,960.,]
 dCyr = [50.]
-# background magnetic field in (Tesla)
-# chocies: dipole, dipoleBr, absDipole, absDipoleBr, constantBr, set, sinfuncBr
-B_type = 'absDipoleBr'
 
-B_mag = [0.31e-3]
-Bd = B_mag
-Br = B_mag
-Bth = None
-const = 0.0
-Bmax = 0.0
-Bmin = 0.0
-sin_exp = 0.0
-Bnoise = 0.3e-3
+# background magnetic field (Tesla)
+# choices: dipole, abs_dipole, constant, set
+#   constant: must specify [Br, Bth, Bph] as floats
+#   abs_dipole: must specify [Bd, Brnoise, Brconst, use_Bth, Bthnoise, Bthconst]
+#   dipole: must specify [Bd, use_bth]
+#   set: must specify [Br, Bth, Bph] as (Nk,Nl) arrays
+B_type = 'abs_dipole'
+Bd = 0.62e-3
+Br = 0.
+Brconst = 0.
+Brnoise = 0.3e-3
+Bth = 0.
+Bthconst = 0.
+Bthnoise = 0.
+Bph = 0.
+use_Bth = False
 
 # background velocity field in (m/s)
 Uphi = 0.0
@@ -50,8 +54,9 @@ buoy_ratio =  [1.0]
 # model parameters
 model_variables = ('ur', 'uth', 'uph', 'br', 'bth', 'bph', 'p', 'r_disp')
 boundary_variables = ('ur', 'uth', 'uph', 'br', 'bth', 'bph', 'p')
-dir_suf = '_general'
+dir_suf = 'general'
 ep = 1e-3
 
 notify_me_by_text = True
 verbose = False
+num_threads = None

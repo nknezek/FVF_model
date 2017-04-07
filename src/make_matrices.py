@@ -38,7 +38,9 @@ dir_suf = cfg.dir_suf
 ep = cfg.ep
 
 # create list of all combinations of iteratable parameters
-iter_param_names = ['m', 'Nk', 'Nl', 'h', 'nu', 'eta', 'dCyr', 'B_type', 'Bd', 'Br', 'Bth', 'const', 'Bmax', 'Bmin', 'sin_exp', 'Uphi', 'buoy_type', 'buoy_ratio', 'model_type', 'noise']
+iter_param_names = ['m', 'Nk', 'Nl', 'h', 'nu', 'eta', 'dCyr',
+                    'B_type', 'Bd', 'Br', 'Bth','Bph','Brconst', 'Brnoise', 'Bthconst', 'Bthnoise','use_Bth',
+                    'Uphi', 'buoy_type', 'buoy_ratio', 'model_type']
 iter_params = {}
 for name in iter_param_names:
     value = eval('cfg.'+name)
@@ -67,7 +69,7 @@ def make_matrix(c):
 
     print('working on combination {0}/{1}'.format(c['iter_num'], c['total_iter']))
 
-    # Store Parameters for this model run
+    # Store Parameters for this model run into local variables to make things easier
     m = c['m']
     Nk = c['Nk']
     Nl = c['Nl']
@@ -75,18 +77,9 @@ def make_matrix(c):
     nu = c['nu']
     eta = c['eta']
     dCyr = c['dCyr']
-    B_type = c['B_type']
-    Bd = c['Bd']
-    Br = c['Br']
-    Bth = c['Bth']
-    const = c['const']
-    Bmax = c['Bmax']
-    Bmin = c['Bmin']
-    sin_exp = c['sin_exp']
     buoy_type = c['buoy_type']
     buoy_ratio = c['buoy_ratio']
     Uphi = c['Uphi']
-    noise = c['noise']
 
     # Directory name to save model
     dir_name = futil.get_directory_name(c)
@@ -102,7 +95,8 @@ def make_matrix(c):
                           'mu_0': mu_0, 'g': g}
     # have to call fvf from the locals() dict direction, as for some reason exec during multiprocess doesn't update the local namespace
     model = locals()['fvf'].Model(model_variables, model_parameters, physical_constants)
-    model.set_B_by_type(B_type=B_type, Bd=Bd, Br=Br, Bth=Bth, const=const, Bmax=Bmax, Bmin=Bmin, sin_exp=sin_exp, noise=noise)
+    model.set_B_by_type(c['B_type'], Bd=c['Bd'], Br=c['Br'], Bth=c['Bth'], Bph=c['Bph'], use_Bth=c['use_Bth'],
+                      Brconst=c['Brconst'], Brnoise=c['Brnoise'], Bthconst=c['Bthconst'], Bthnoise=c['Bthnoise'])
     model.set_buoy_by_type(buoy_type=buoy_type, buoy_ratio=buoy_ratio)
     if type(dCyr) == (float or int):
         model.set_CC_skin_depth(dCyr)
@@ -144,8 +138,8 @@ def make_matrix(c):
     'mu_0 = ' + str(model.mu_0) + '\n' +
     'g = ' + str(model.g) + '\n' +
     'dCyr = ' + str(dCyr) + '\n' +
-    'B_Type = ' + str(B_type) + '\n' +
-    'Bd = ' + str(Bd) + '\n' +
+    'B_Type = ' + str(c['B_type']) + '\n' +
+    'Bd = ' + str(c['Bd']) + '\n' +
     'Br = ' + str(model.Br.max()) + ' to ' + str(model.Br.min()) + '\n' +
     'Bth = ' + str(model.Bth.max()) + ' to ' + str(model.Bth.min()) + '\n' +
     'Uph = ' + str(model.Uphi.max()) + ' to ' + str(model.Uphi.min()) + '\n' +
@@ -189,7 +183,10 @@ def make_matrix(c):
     return
 
 if __name__ == '__main__':
-    procs = mp.cpu_count()
+    if cfg.num_threads is None:
+        procs = mp.cpu_count()
+    else:
+        procs = cfg.num_threads
     p = mp.Pool(processes=procs)
     p.map(make_matrix, combinations)
     time = datetime.datetime.today().ctime()

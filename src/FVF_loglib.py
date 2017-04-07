@@ -19,7 +19,7 @@ def setup_custom_logger(dir_name='./',filename='MAC.log', verbose=True):
     logger.addHandler(fileHandler)
     return logger
 
-def log_model(logger,model):
+def log_model(logger, model):
     m = model.m_values[0]
     Nk = model.Nk
     Nl = model.Nl
@@ -47,9 +47,9 @@ def log_model(logger,model):
     logger.info(
     '\nMAC model, m={0}, Nk={1}, Nl={2}\n'.format(m,Nk,Nl)
     +'\nPhysical Parameters\n'
+    +'h = {0} km\n'.format(h*1e-3)
     +'Omega = {0:.2e} rad/s\n'.format(Omega)
     +'R = {0} km\n'.format(R*1e-3)
-    +'h = {0} km\n'.format(h*1e-3)
     +'rho = {0:.2e} kg/m^3\n'.format(rho)
     +'nu = {0:.2e} m/s^2\n'.format(nu)
     +'eta = {0:.2e} m/s^2\n'.format(eta)

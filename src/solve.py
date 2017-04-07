@@ -42,19 +42,15 @@ num_to_keep = cfg.num_to_keep
 wt_region=cfg.wt_region
 wt_sym=cfg.wt_sym
 eq_split = cfg.eq_split
-
 eq_var = cfg.eq_var
 real_var = cfg.real_var
-
 filemodel = cfg.filemodel
 fileA = cfg.fileA
 fileB = cfg.fileB
 savefile = cfg.savefile
-
 plot_robinson = cfg.plot_robinson
 plot_B_obs = cfg.plot_B_obs
 plot_vel = cfg.plot_vel
-
 tol = cfg.tol
 
 # Iterate over parameters that can vary
@@ -251,7 +247,10 @@ def solve_for_combo(c):
     print('done with combination {0}/{1}'.format(c['iter_num'], c['total_iter']))
 
 if __name__ == '__main__':
-    procs = mp.cpu_count()
+    if cfg.num_threads is None:
+        procs = mp.cpu_count()
+    else:
+        procs = cfg.num_threads
     p = mp.Pool(processes=procs)
     p.map(solve_for_combo, combinations)
     time = datetime.today().ctime()
