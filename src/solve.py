@@ -94,7 +94,6 @@ def solve_for_combo(c):
 
     # Set up directory to store solution data
     out_dir = futil.get_out_dir(out_dir_base, data_dir, len(cfg.data_dir), T, len(cfg.T_list))
-    print(out_dir)
     futil.ensure_dir(out_dir)
 
     # Set up logger

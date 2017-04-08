@@ -197,18 +197,24 @@ def shift_vec_real(model, vec, var='ur'):
     else:
         return vec*np.exp(-1j*avg_ang)
 
-def get_theta_zero_crossings(model, vec, var='uth'):
+def get_theta_zero_crossings(model, vec, var='uth', cutoff=0.075):
     z = model.get_variable(vec, var)
     ind = np.argmax(np.mean(np.abs(z),axis=1))
-    signs = np.sign(z[ind,1:-1])
-    zeros = np.where(signs[1:] != signs[:-1])[0]
+    zi = z[ind,1:-1]
+    zi[np.abs(zi) < cutoff * np.max(np.abs(zi))] = 0.
+    signs = np.sign(zi)
+    stripped_signs = signs[np.nonzero(signs)]
+    zeros = np.where(stripped_signs[1:] != stripped_signs[:-1])[0]
     return len(zeros)
 
-def get_r_zero_crossings(model, vec, var='uph'):
+def get_r_zero_crossings(model, vec, var='uph', cutoff=0.075):
     z = model.get_variable(vec, var)
     ind = np.argmax(np.mean(np.abs(z),axis=0))
-    signs = np.sign(z[1:-1,ind])
-    zeros = np.where(signs[1:] != signs[:-1])[0]
+    zi = z[ind,1:-1]
+    zi[np.abs(zi) < cutoff * np.max(np.abs(zi))] = 0.
+    signs = np.sign(zi)
+    stripped_signs = signs[np.nonzero(signs)]
+    zeros = np.where(stripped_signs[1:] != stripped_signs[:-1])[0]
     return len(zeros)
 
 def get_Q(model, val):
