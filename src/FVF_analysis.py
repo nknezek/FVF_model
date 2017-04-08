@@ -125,7 +125,6 @@ def misfit_smoothness_r(model, vec, var='uph'):
     y = (model.get_variable(vec, var)).real
     return np.mean(np.abs(y[2:,:]+y[:-2,:]-2*y[1:-1,:]))/np.mean(np.abs(y))
 
-
 def apply_d2(model, vec):
     try:
         model.d2Mat

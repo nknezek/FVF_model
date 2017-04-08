@@ -2,6 +2,8 @@ import os
 import shutil
 import sys
 import importlib
+import dill
+import FVF_analysis as fana
 
 def get_directory_name(param_dict, include_nu=False):
     c = param_dict
@@ -63,3 +65,20 @@ def find_available_skin_depths(directory):
 def find_closest_CC(Target, dCyr_list):
     dist = [abs(x-abs(Target)) for x in dCyr_list]
     return dCyr_list[dist.index(min(dist))]
+
+def load_stored_data(filename):
+    with open(filename, 'rb') as f:
+        d1 = dill.load(f)
+    return d1['model'], d1['vals'], d1['vecs']
+
+def make_lk_dict(model, vals, vecs, var='uth', cutoff=0.075):
+    vdict = {}
+    for val,vec in zip(vals,vecs):
+        l = fana.get_theta_zero_crossings(model, vec, var=var, cutoff=cutoff)
+        k = fana.get_r_zero_crossings(model, vec, var=var, cutoff=cutoff)
+        if k not in vdict.keys():
+            vdict[k] = {}
+        if l not in vdict[k].keys():
+            vdict[k][l] = []
+        vdict[k][l].append((val,vec))
+    return vdict
