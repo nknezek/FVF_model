@@ -210,7 +210,7 @@ def get_theta_zero_crossings(model, vec, var='uth', cutoff=0.075):
 def get_r_zero_crossings(model, vec, var='uph', cutoff=0.075):
     z = model.get_variable(vec, var)
     ind = np.argmax(np.mean(np.abs(z),axis=0))
-    zi = z[ind,1:-1]
+    zi = z[1:-1,ind]
     zi[np.abs(zi) < cutoff * np.max(np.abs(zi))] = 0.
     signs = np.sign(zi)
     stripped_signs = signs[np.nonzero(signs)]
