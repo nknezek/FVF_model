@@ -39,7 +39,7 @@ ep = cfg.ep
 
 # create list of all combinations of iteratable parameters
 iter_param_names = ['m', 'Nk', 'Nl', 'h', 'nu', 'eta', 'dCyr',
-                    'B_type', 'Bd', 'Br', 'Bth','Bph','Brconst', 'Brnoise', 'Bthconst', 'Bthnoise','use_Bth',
+                    'B_type', 'Bd', 'Br', 'Bth','Bph','Brconst', 'Brnoise','Brmult', 'Bthconst', 'Bthnoise', 'Bthmult','use_Bth',
                     'Uphi', 'buoy_type', 'buoy_ratio', 'model_type']
 iter_params = {}
 for name in iter_param_names:
@@ -96,7 +96,7 @@ def make_matrix(c):
     # have to call fvf from the locals() dict direction, as for some reason exec during multiprocess doesn't update the local namespace
     model = locals()['fvf'].Model(model_variables, model_parameters, physical_constants)
     model.set_B_by_type(c['B_type'], Bd=c['Bd'], Br=c['Br'], Bth=c['Bth'], Bph=c['Bph'], use_Bth=c['use_Bth'],
-                      Brconst=c['Brconst'], Brnoise=c['Brnoise'], Bthconst=c['Bthconst'], Bthnoise=c['Bthnoise'])
+                      Brconst=c['Brconst'], Brnoise=c['Brnoise'], Brmult=c['Brmult'], Bthconst=c['Bthconst'], Bthnoise=c['Bthnoise'], Bthmult=c['Bthmult'])
     model.set_buoy_by_type(buoy_type=buoy_type, buoy_ratio=buoy_ratio)
     if type(dCyr) == (float or int):
         model.set_CC_skin_depth(dCyr)

@@ -16,10 +16,14 @@ def get_directory_name(param_dict, include_nu=False):
         folder_name += '_{0:.2f}mTrnse'.format(c['Brnoise'] * 1e3)
     if c['Brconst'] > 0.0:
         folder_name += '_{0:.2f}mTrcst'.format(c['Brconst'] * 1e3)
+    if (c['Brmult'] != 1.) and (c['Brmult'] != 0.):
+        folder_name += '_{0:.2f}Brmult'.format(c['Brmult'])
     if c['Bthnoise'] > 0.0:
         folder_name += '_{0:.2f}mTthnse'.format(c['Bthnoise'] * 1e3)
     if c['Bthconst'] > 0.0:
         folder_name += '_{0:.2f}mTthcst'.format(c['Bthconst'] * 1e3)
+    if (c['Bthmult'] != 1.) and (c['Bthmult'] != 0.):
+        folder_name += '_{0:.2f}Bthmult'.format(c['Bthmult'])
     if include_nu:
         folder_name += '_{0:.0e}m2s'.format(c['nu'])
     folder_name += '_{0}k_{1}l/'.format(c['Nk'], c['Nl'])
@@ -29,7 +33,7 @@ def get_directory_name(param_dict, include_nu=False):
 def get_out_dir(out_dir_base, data_dir, num_data_dirs, T, num_T):
     out_dir = out_dir_base
     if num_data_dirs > 1:
-        subfolders = data_dir.strip('/').split('_')
+        subfolders = ((data_dir.split('/'))[2]).split('_')
         for subfolder in subfolders[:-2]:
             out_dir += subfolder+'/'
     if num_T > 1:

@@ -115,14 +115,15 @@ class Model():
         self.set_Bph(0.0)
         return None
 
-    def set_B_abs_dipole(self, Bd, Brnoise=0., Brconst=0., use_Bth=False, Bthnoise=0., Bthconst=0.):
+    def set_B_abs_dipole(self, Bd, Brnoise=0., Brconst=0., Brmult=1., use_Bth=False,
+                         Bthnoise=0., Bthconst=0., Bthmult=1.):
         ''' Sets the background magnetic Br and Bth field to the absolute value of a
         dipole field with Bd = dipole constant in Tesla '''
         self.Bd = Bd
-        self.BrT = np.sqrt((Bd*cos(self.th))**2+Brnoise**2) + Brconst
+        self.BrT = np.sqrt((Bd*cos(self.th))**2+Brnoise**2)*Brmult + Brconst
         self.Br = self.BrT/self.B_star
         if use_Bth:
-            self.BthT = np.sqrt((Bd*np.sin(self.th))**2 + Bthnoise**2) + Bthconst
+            self.BthT = np.sqrt((Bd*np.sin(self.th))**2 + Bthnoise**2)*Bthmult + Bthconst
             self.Bth = self.BthT/self.B_star
         else:
             self.set_Bth(0.0)
@@ -130,7 +131,7 @@ class Model():
         return None
 
     def set_B_by_type(self, B_type, Bd=0., Br=0., Bth=0., Bph=0., use_Bth=False,
-                      Brconst=0., Brnoise=0., Bthconst=0., Bthnoise=0.):
+                      Brconst=0., Brnoise=0., Brmult=1., Bthconst=0., Bthnoise=0., Bthmult=1.):
         ''' Sets the background magnetic field to given type.
         B_type choices:
             * dipole : Br, Bth dipole; specify scalar dipole constant Bd (T)
@@ -148,8 +149,8 @@ class Model():
             self.set_Bth(Bth*np.ones((self.Nk, self.Nl)))
             self.set_Bph(Bph*np.ones((self.Nk, self.Nl)))
         elif B_type == 'abs_dipole':
-            self.set_B_abs_dipole(Bd, Brnoise=Brnoise, Brconst=Brconst,
-                                  use_Bth=use_Bth, Bthnoise=Bthnoise, Bthconst=Bthconst)
+            self.set_B_abs_dipole(Bd, Brnoise=Brnoise, Brconst=Brconst, Brmult=Brmult, use_Bth=use_Bth,
+                                  Bthnoise=Bthnoise, Bthconst=Bthconst, Bthmult=Bthmult)
         elif B_type == 'set':
             self.set_Br(Br)
             self.set_Bth(Bth)

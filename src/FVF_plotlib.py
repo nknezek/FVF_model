@@ -353,24 +353,34 @@ def plot_B(model, dir_name='./', title='B field structure'):
     plt.subplot(3,1,1)
 
     plt.plot(model.th[0,:]*180./np.pi,model.Br[model.Nk//2,:]*model.B_star*1e3)
-    xmin, xmax = plt.xlim()
-    if xmin > 0.0:
-        plt.xlim(xmin=0.0)
     plt.title('Br background field')
     plt.ylabel('Br in (10^-3 T)')
     plt.xlabel('colatitude in degrees')
+    plt.grid()
+    ymin, ymax = plt.ylim()
+    if ymin > 0.:
+        plt.ylim(ymin=0.)
 
     plt.subplot(3,1,2)
     plt.plot(model.th[0,:]*180./np.pi,model.Bth[model.Nk//2,:]*model.B_star*1e3)
     plt.title('B_theta background field')
     plt.ylabel('B_theta in (10^-3 T)')
     plt.xlabel('colatitude in degrees')
+    plt.grid()
+    ymin, ymax = plt.ylim()
+    if ymin > 0.:
+        plt.ylim(ymin=0.)
 
     plt.subplot(3,1,3)
     plt.plot(model.th[0,:]*180./np.pi,model.Bph[model.Nk//2,:]*model.B_star*1e3)
     plt.title('B_phi background field')
     plt.ylabel('B_phi in (10^-3 T)')
     plt.xlabel('colatitude in degrees')
+    plt.grid()
+    ymin, ymax = plt.ylim()
+    if ymin > 0.:
+        plt.ylim(ymin=0.)
+
     fig.set_tight_layout(True)
     plt.savefig(dir_name+title+'.png')
 
