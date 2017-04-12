@@ -4,7 +4,10 @@ import sys
 import importlib
 import dill
 import FVF_analysis as fana
+import numpy as np
 
+def convert_model_freq_to_period_yrs(omega):
+    return 2*np.pi/1j*omega
 def get_directory_name(param_dict, include_nu=False):
     c = param_dict
     folder_name = '../data/m{0:.0f}_{1:.0f}km_{2:.2f}N_{3}'.format(c['m'], c['h'] * 1e-3, c['buoy_ratio'], c['B_type'])
