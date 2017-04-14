@@ -225,9 +225,9 @@ def solve_for_combo(c):
             th_ord = fana.get_theta_zero_crossings(model, vec, var=cfg.th_ord_var)
 
             if abs(Period) < 1.0:
-                title = ('m={5}, l={4}, k={3}, T{1:.2f}dys_Q{2:.2f}_{0:.0f}'.format(ind, Period*365.25, Q, r_ord, th_ord, model.m))
+                title = ('{0:.0f} m={5}, l={4}, k={3}, T={1:.2f}dys, Q={2:.2f}'.format(ind, Period*365.25, Q, r_ord, th_ord, model.m))
             else:
-                title = ('m={5}, l={4}, k={3}, T{1:.2f}yrs_Q{2:.2f}_{0:.0f}'.format(ind, Period, Q, r_ord, th_ord, model.m))
+                title = ('{0:.0f} m={5}, l={4}, k={3}, T={1:.2f}yrs, Q={2:.2f}'.format(ind, Period, Q, r_ord, th_ord, model.m))
             if plot_vel:
                 if (model.Nk > 1):
                     fplt.plot_pcolormesh_rth(model, val, vec, dir_name=out_dir, title=title, physical_units=True)
