@@ -39,7 +39,6 @@ class Model(FVF_model_base.Model):
         self.add_gov_equation('rmom', 'ur')
         self.rmom.add_drP('p', C= -1)
         self.rmom.add_term('r_disp', -N**2)
-        self.rmom.add_term('uph', 2.0*sin(th))
         self.rmom.add_d2_b0('ur', C= E)
         self.rmom.add_d2r_th('uth', C= E)
         self.rmom.add_d2r_ph('uph', C= E)
