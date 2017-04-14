@@ -13,10 +13,10 @@ Nl = 200 # Latitudinal cells
 
 # Define Physical Constants
 R = 3480e3  # Outer core radius in (m)
-h = 140e3  # layer thickness in (m)
+h = [80e3, 140e3]  # layer thickness in (m)
 Omega = 2*np.pi/(23.9345*3600.0)  # rotation rate in (rad/s)
 rho = 1e4   # density in (kg/m^3)
-nu = 1e-2  # momentum diffusivity in (m^2/s)
+nu = [1e-2, 1e2]  # momentum diffusivity in (m^2/s)
 eta = 1.0  # magnetic diffusivity in (m^2/s)
 mu_0 = 4.*np.pi*10.**-7  # vacuum permeability in (kg*m/(A^2s^2))
 g = 10.  # Gravity in m/s^2
@@ -33,9 +33,11 @@ Bd = 0.
 Br = 0.
 Brconst = 0.
 Brnoise = 0.
+Brmult = 0.
 Bth = 0.
 Bthconst = 0.
 Bthnoise = 0.
+Bthmult = 0.
 Bph = 0.
 use_Bth = False
 
@@ -48,7 +50,8 @@ buoy_type = 'constant'
 buoy_ratio = 1.0
 
 # model parameters
-model_variables = ('uth', 'uph', 'p')
+model_variables = ('ur', 'uth', 'uph', 'p', 'r_disp')
+boundary_variabes = ('ur','uth','uph', 'p')
 
 # Directory suffix name to save model
 dir_suf = 'BC'
