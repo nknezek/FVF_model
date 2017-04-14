@@ -85,19 +85,22 @@ def misfit_result(model, val, vec, target_T=None, target_Q=None, target_r_order=
 
 def misfit_Q(model, val, target_Q):
     Q = np.abs(val.imag / (2 * val.real))
-    return np.abs(Q-target_Q)/max(1.,target_Q)
+    return np.abs(Q - target_Q) / max(Q, target_Q)
 
 def misfit_T(model, val, target_T):
-    T = (2 * np.pi / val.imag) * model.t_star / (24. * 3600. * 365.25)
-    return np.abs(T-target_T)/target_T
+    T = (2 * np.pi / np.abs(val.imag)) * model.t_star / (24. * 3600. * 365.25)
+    return np.abs(T-target_T)/max(target_T, T)
+
+def saturation(x, c=1):
+    return x/(x+c)
 
 def misfit_th_order(model, vec, target_th_order,  var='uph'):
     zeros = get_theta_zero_crossings(model, vec,  var=var)
-    return np.abs(zeros-target_th_order)/max(1, target_th_order)/4
+    return saturation(np.abs(zeros-target_th_order), c=2)
 
 def misfit_r_order(model, vec, target_r_order,  var='uph'):
     zeros = get_r_zero_crossings(model, vec,  var=var)
-    return np.abs(zeros-target_r_order)/max(1, target_r_order)/4
+    return saturation(np.abs(zeros-target_r_order), c=2)
 
 def misfit_region(model, vec, target_region, eq_cutoff, var='uph'):
     var_out = model.get_variable(vec, var)
@@ -119,11 +122,11 @@ def misfit_symmetric(model, vec, var='uph'):
 
 def misfit_smoothness_th(model, vec, var='uph'):
     y = (model.get_variable(vec, var)).real
-    return np.mean(np.abs(y[:,2:]+y[:,:-2]-2*y[:,1:-1]))/np.mean(np.abs(y))
+    return saturation(np.mean(np.abs(y[:,2:]+y[:,:-2]-2*y[:,1:-1]))/np.mean(np.abs(y)), c=1)
 
 def misfit_smoothness_r(model, vec, var='uph'):
     y = (model.get_variable(vec, var)).real
-    return np.mean(np.abs(y[2:,:]+y[:-2,:]-2*y[1:-1,:]))/np.mean(np.abs(y))
+    return saturation(np.mean(np.abs(y[2:,:]+y[:-2,:]-2*y[1:-1,:]))/np.mean(np.abs(y)), c=1)
 
 def apply_d2(model, vec):
     try:
