@@ -50,8 +50,8 @@ data_dir = [
     # '../data/m0_140km_1.00N_set_1e+02m2s_20k_200l/',
     # '../data/m0_140km_1.00N_set_1e-02m2s_20k_200l/',
     # '../data/m4_140km_1.00N_set_1e+02m2s_20k_200l/',
-    # '../data/m4_140km_1.00N_set_1e-02m2s_20k_200l/',
-    '../data/m6_140km_1.00N_set_1e+02m2s_20k_200l/',
+    '../data/m4_140km_1.00N_set_1e-02m2s_20k_200l/',
+    # '../data/m6_140km_1.00N_set_1e+02m2s_20k_200l/',
     # '../data/m6_140km_1.00N_set_1e-02m2s_20k_200l/',
 ]
 
