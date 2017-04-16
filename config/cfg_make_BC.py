@@ -5,18 +5,18 @@ import numpy as np
 model_type = "BC_model"
 
 # mode to simulate (longitudinal)
-m = [0,4,6]
+m = [0,1,2,3,4,5,6]
 
 # Size of grid
-Nk = 20 # Radial cells
-Nl = 200 # Latitudinal cells
+Nk = 30 # Radial cells
+Nl = 210 # Latitudinal cells
 
 # Define Physical Constants
 R = 3480e3  # Outer core radius in (m)
-h = [80e3, 140e3]  # layer thickness in (m)
+h = [140e3]  # layer thickness in (m)
 Omega = 2*np.pi/(23.9345*3600.0)  # rotation rate in (rad/s)
 rho = 1e4   # density in (kg/m^3)
-nu = [1e-2, 1e2]  # momentum diffusivity in (m^2/s)
+nu = [1e2]  # momentum diffusivity in (m^2/s)
 eta = 1.0  # magnetic diffusivity in (m^2/s)
 mu_0 = 4.*np.pi*10.**-7  # vacuum permeability in (kg*m/(A^2s^2))
 g = 10.  # Gravity in m/s^2
