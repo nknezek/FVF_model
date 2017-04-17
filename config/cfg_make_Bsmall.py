@@ -20,7 +20,7 @@ nu = [1e-1]   # momentum diffusivity in (m^2/s)
 eta = 0.8  # magnetic diffusivity in (m^2/s)
 mu_0 = 4.*np.pi*10.**-7  # vacuum permeability in (kg*m/(A^2s^2))
 g = 10.  # Gravity in m/s^2
-dCyr = [40/365.25, 120/365.25, 1., 3., 9.]
+dCyr = [40/365.25, 120/365.25]
 # dCyr = [65., 150., 300., 600.]
 
 # background magnetic field (Tesla)
@@ -58,4 +58,4 @@ ep = 1e-4
 
 notify_me_by_text = True
 verbose = False
-num_threads = None
+num_threads = 2
