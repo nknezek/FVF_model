@@ -12,7 +12,10 @@ def get_directory_name(param_dict, include_nu=False):
     c = param_dict
     folder_name = '../data/m{0:.0f}_{1:.0f}km_{2:.2f}N_{3}'.format(c['m'], c['h'] * 1e-3, c['buoy_ratio'], c['B_type'])
     if c['Br'] > 0:
-        folder_name += '_{0:.2f}mTBr'.format(c['Br'] * 1e3)
+        if (c['Br'] * 1e3) >= 0.01:
+            folder_name += '_{0:.2f}mTBr'.format(c['Br'] * 1e3)
+        else:
+            folder_name += '_{0:.2e}mTBr'.format(c['Br'] * 1e3)
     if c['Bth'] > 0:
         folder_name += '_{0:.2f}mTBth'.format(c['Br'] * 1e3)
     if c['Bd'] > 0.:

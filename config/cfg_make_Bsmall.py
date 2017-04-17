@@ -31,7 +31,8 @@ dCyr = [40/365.25, 120/365.25, 1., 3., 9.]
 #   set: must specify [Br, Bth, Bph] as (Nk,Nl) arrays
 B_type = 'constant'
 Bd = 0.
-Br = [0.0001e-3, 0.001e-3, 0.01e-3, 0.1e-3]
+# Br = [0.0001e-3, 0.001e-3, 0.01e-3, 0.1e-3]
+Br = [0.1e-3]
 Brconst = 0.
 Brnoise = 0.
 Brmult = 0.

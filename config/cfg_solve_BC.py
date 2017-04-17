@@ -3,7 +3,6 @@ import numpy as np
 """ Configuration File for SLEPc Run solving MAC model """
 
 T_list = [25/365.25, 50/365.25, 100/365.25, 200/365.25, -25/365.25, -50/365.25, -100/365.25, -200/365.25]
-# T_list = [3125, 10000, 30000, 90000, -3125, -10000, -30000, -90000]
 
 nev = 500
 num_to_keep = 50
