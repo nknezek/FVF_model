@@ -7,6 +7,7 @@ T_list = [100/365.25, 200/365.25, 2., 4., 8., 16., 32., 64.]
 nev = 200
 num_to_keep = 20
 
+
 eq_split = 0.5
 target_r_order = 1
 target_th_order = 1
