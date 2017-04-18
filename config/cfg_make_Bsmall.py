@@ -20,8 +20,9 @@ nu = [1e-1]   # momentum diffusivity in (m^2/s)
 eta = 0.8  # magnetic diffusivity in (m^2/s)
 mu_0 = 4.*np.pi*10.**-7  # vacuum permeability in (kg*m/(A^2s^2))
 g = 10.  # Gravity in m/s^2
-dCyr = [40/365.25, 120/365.25]
+# dCyr = [40/365.25, 120/365.25, 1.]
 # dCyr = [65., 150., 300., 600.]
+dCyr = [3000., 9000., 27000.]
 
 # background magnetic field (Tesla)
 # choices: dipole, abs_dipole, constant, set
@@ -31,8 +32,8 @@ dCyr = [40/365.25, 120/365.25]
 #   set: must specify [Br, Bth, Bph] as (Nk,Nl) arrays
 B_type = 'constant'
 Bd = 0.
-# Br = [0.0001e-3, 0.001e-3, 0.01e-3, 0.1e-3]
-Br = [0.1e-3]
+Br = [0.0001e-3, 0.001e-3, 0.01e-3]
+# Br = [0.1e-3]
 Brconst = 0.
 Brnoise = 0.
 Brmult = 0.
@@ -59,4 +60,4 @@ ep = 1e-4
 
 notify_me_by_text = True
 verbose = False
-num_threads = 2
+num_threads = None
