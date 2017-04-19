@@ -46,7 +46,7 @@ def get_out_dir(out_dir_base, data_dir, num_data_dirs, T, num_T):
         for subfolder in subfolders[:-2]:
             out_dir += subfolder+'/'
     if num_T > 1:
-        if T >= 1.:
+        if np.abs(T) >= 1.:
             out_dir +='{0:.2f}yrs/'.format(T)
         else:
             out_dir += '{0:.2f}days/'.format(T*365.25)
