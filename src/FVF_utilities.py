@@ -8,6 +8,7 @@ import numpy as np
 
 def convert_model_freq_to_period_yrs(omega):
     return 2*np.pi/1j*omega
+
 def get_directory_name(param_dict, include_nu=False):
     c = param_dict
     folder_name = '../data/m{0:.0f}_{1:.0f}km_{2:.2f}N_{3}'.format(c['m'], c['h'] * 1e-3, c['buoy_ratio'], c['B_type'])
@@ -45,7 +46,10 @@ def get_out_dir(out_dir_base, data_dir, num_data_dirs, T, num_T):
         for subfolder in subfolders[:-2]:
             out_dir += subfolder+'/'
     if num_T > 1:
-        out_dir +='{0:.2f}yrs/'.format(T)
+        if T >= 1.:
+            out_dir +='{0:.2f}yrs/'.format(T)
+        else:
+            out_dir += '{0:.2f}days/'.format(T*365.25)
     return out_dir
 
 def ensure_dir(f):
