@@ -180,17 +180,20 @@ class Model():
         self.U0 = self.Uphi*self.r_star/self.t_star
         return None
 
-    def set_buoyancy(self, drho_dr):
-        '''Sets the buoyancy structure of the layer'''
+    def set_buoyancy_from_density_gradient(self, drho_dr):
+        '''Sets the buoyancy structure of the layer given a density gradient'''
         self.omega_g = np.sqrt(-self.g/self.rho*drho_dr)
         self.N = self.omega_g**2*self.t_star**2
 
     def set_buoy_by_type(self, buoy_type, buoy_ratio):
+        '''sets the buoyancy frequency of the model given '''
         self.omega_g0 = buoy_ratio*self.Omega
         if buoy_type == 'constant':
             self.omega_g = np.ones((self.Nk, self.Nl))*self.omega_g0
         elif buoy_type == 'linear':
             self.omega_g = (np.ones((self.Nk, self.Nl)).T*np.linspace(0, self.omega_g0, self.Nk)).T
+        elif buoy_type == 'set':
+            self.omega_g = self.omega_g0
         self.N = self.omega_g**2*self.t_star**2
 
     def get_index(self, k, l, var):
