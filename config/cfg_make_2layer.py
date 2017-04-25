@@ -18,7 +18,7 @@ Nl = 200 # Latitudinal cells
 # choices: constant, linear, set
 buoy_type = 'set'
 h_upper = 40e3
-dr = h/Nk
+dr = np.array(h)/Nk
 N_upper = 4
 N_lower = 1
 buoy_type = 'set'
@@ -31,9 +31,9 @@ buoy_ratio[-int(h_upper/dr):] *= N_upper/N_lower
 #   abs_dipole: must specify [Bd, Brnoise, Brconst, use_Bth, Bthnoise, Bthconst]
 #   dipole: must specify [Bd, use_bth]
 #   set: must specify [Br, Bth, Bph] as (Nk,Nl) arrays
-B_type = 'abs_dipole'
-Bd = 0.62e-3
-Br = 0.
+B_type = 'constant'
+Bd = 0.
+Br = 0.6e-3
 Brconst = 0.
 Brnoise = 0.
 Brmult = 1.

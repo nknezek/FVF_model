@@ -340,7 +340,11 @@ def plot_buoy_struct(model, dir_name='./', title='buoyancy_structure'):
     plt.xlabel('density perturbation off adiabat (kg/m^4)')
 
     plt.subplot(1,2,2)
-    plt.plot(model.omega_g[:,model.Nl//2]*model.t_star,(model.r[:,0]-1)*model.r_star/1000)
+    xplt = model.omega_g[:,model.Nl//2]*model.t_star
+    yplt = (model.r[:,0]-1)*model.r_star/1000
+    plt.plot(xplt,yplt)
+    plt.xlim(xmin=0., xmax=np.max(xplt)*1.1)
+    plt.ylim(ymin=np.min(yplt), ymax=np.max(yplt))
     plt.title('buoyancy frequency')
     plt.ylabel('depth below CMB (km)')
     plt.xlabel('buoyancy frequency (omega_g/Omega)')
@@ -350,36 +354,32 @@ def plot_buoy_struct(model, dir_name='./', title='buoyancy_structure'):
 def plot_B(model, dir_name='./', title='B field structure'):
     plt.close('all')
     fig = plt.figure(figsize=(10,10))
-    plt.subplot(3,1,1)
 
-    plt.plot(model.th[0,:]*180./np.pi,model.Br[model.Nk//2,:]*model.B_star*1e3)
+    plt.subplot(3,1,1)
+    xplt = model.th[0,:]*180./np.pi
+    yplt = model.Br[model.Nk//2,:]*model.B_star*1e3
+    plt.plot(xplt,yplt)
     plt.title('Br background field')
-    plt.ylabel('Br in (10^-3 T)')
+    plt.ylabel('Br (mT)')
     plt.xlabel('colatitude in degrees')
     plt.grid()
-    ymin, ymax = plt.ylim()
-    if ymin > 0.:
-        plt.ylim(ymin=0.)
+    plt.ylim(-1,1)
 
     plt.subplot(3,1,2)
     plt.plot(model.th[0,:]*180./np.pi,model.Bth[model.Nk//2,:]*model.B_star*1e3)
     plt.title('B_theta background field')
-    plt.ylabel('B_theta in (10^-3 T)')
+    plt.ylabel('B_theta (mT)')
     plt.xlabel('colatitude in degrees')
     plt.grid()
-    ymin, ymax = plt.ylim()
-    if ymin > 0.:
-        plt.ylim(ymin=0.)
+    plt.ylim(-1,1)
 
     plt.subplot(3,1,3)
     plt.plot(model.th[0,:]*180./np.pi,model.Bph[model.Nk//2,:]*model.B_star*1e3)
     plt.title('B_phi background field')
-    plt.ylabel('B_phi in (10^-3 T)')
+    plt.ylabel('B_phi (mT)')
     plt.xlabel('colatitude in degrees')
     plt.grid()
-    ymin, ymax = plt.ylim()
-    if ymin > 0.:
-        plt.ylim(ymin=0.)
+    plt.ylim(-1,1)
 
     fig.set_tight_layout(True)
     plt.savefig(dir_name+title+'.png')
