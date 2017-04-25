@@ -83,7 +83,8 @@ def make_matrix(c):
 
     # Directory name to save model
     include_nu = (len(cfg.nu) > 1)
-    dir_name = futil.get_directory_name(c, include_nu=include_nu)
+    include_eta = (len(cfg.eta) > 1)
+    dir_name = futil.get_directory_name(c, include_nu=include_nu, include_eta=include_eta)
     filemodel = 'model.p' # name of model in directory
     fileA = 'A' # name of A matrix data
     fileB = 'B' # name of M matrix data
