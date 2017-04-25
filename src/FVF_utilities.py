@@ -9,7 +9,7 @@ import numpy as np
 def convert_model_freq_to_period_yrs(omega):
     return 2*np.pi/1j*omega
 
-def get_directory_name(param_dict, include_nu=False):
+def get_directory_name(param_dict):
     c = param_dict
     folder_name = '../data/m{0:.0f}_{1:.0f}km'.format(c['m'], c['h'] * 1e-3)
     if type(c['buoy_ratio']) is np.ndarray:
@@ -27,19 +27,23 @@ def get_directory_name(param_dict, include_nu=False):
     if c['Bd'] > 0.:
         folder_name += '_{0:.2f}mTBd'.format(c['Bd'] * 1e3)
     if c['Brnoise'] > 0.0:
-        folder_name += '_{0:.2f}mTrnse'.format(c['Brnoise'] * 1e3)
+        folder_name += '_{0:.2f}mTBrnse'.format(c['Brnoise'] * 1e3)
     if c['Brconst'] > 0.0:
-        folder_name += '_{0:.2f}mTrcst'.format(c['Brconst'] * 1e3)
+        folder_name += '_{0:.2f}mTBrcst'.format(c['Brconst'] * 1e3)
     if (c['Brmult'] != 1.) and (c['Brmult'] != 0.):
-        folder_name += '_{0:.2f}Brmult'.format(c['Brmult'])
+        folder_name += '_{0:.2f}mTBrmult'.format(c['Brmult'])
     if c['Bthnoise'] > 0.0:
-        folder_name += '_{0:.2f}mTthnse'.format(c['Bthnoise'] * 1e3)
+        folder_name += '_{0:.2f}mTBthnse'.format(c['Bthnoise'] * 1e3)
     if c['Bthconst'] > 0.0:
-        folder_name += '_{0:.2f}mTthcst'.format(c['Bthconst'] * 1e3)
+        folder_name += '_{0:.2f}mTBthcst'.format(c['Bthconst'] * 1e3)
     if (c['Bthmult'] != 1.) and (c['Bthmult'] != 0.):
-        folder_name += '_{0:.2f}Bthmult'.format(c['Bthmult'])
-    if include_nu:
-        folder_name += '_{0:.0e}m2s'.format(c['nu'])
+        folder_name += '_{0:.2f}mTBthmult'.format(c['Bthmult'])
+    if (type(c['nu']) is list):
+        if len(c['nu']) > 1:
+            folder_name += '_{0:.0e}m2snu'.format(c['nu'])
+    if (type(c['eta']) is list):
+        if len(c['eta']) > 1:
+            folder_name += '_{0:.0e}m2seta'.format(c['eta'])
     folder_name += '_{0}k_{1}l/'.format(c['Nk'], c['Nl'])
     return folder_name
 

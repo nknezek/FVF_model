@@ -52,7 +52,7 @@ R = 3480e3  # Outer core radius in (m)
 Omega = 2*np.pi/(23.9345*3600.0)  # rotation rate in (rad/s)
 rho = 1.e4   # density in (kg/m^3)
 nu = [1e-2]   # momentum diffusivity in (m^2/s)
-eta = 0.8  # magnetic diffusivity in (m^2/s)
+eta = [0.8]  # magnetic diffusivity in (m^2/s)
 mu_0 = 4.*np.pi*10.**-7  # vacuum permeability in (kg*m/(A^2s^2))
 g = 10.  # Gravity in m/s^2
 
