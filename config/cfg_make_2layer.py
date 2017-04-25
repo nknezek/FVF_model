@@ -5,7 +5,7 @@ import numpy as np
 model_type = "MAC_model"
 
 # mode to simulate (longitudinal)
-m = [0]
+m = [6]
 
 # layer thickness in (m)
 h = [140e3]
