@@ -2,7 +2,7 @@
 import numpy as np
 """ Configuration File for SLEPc Run solving MAC model """
 
-T_list = [20, -20, 46, -46, 91, -91, 181, -181]
+T_list = [5, -5, 10, -10, 181, -181]
 
 nev = 300
 num_to_keep = 30
@@ -10,12 +10,12 @@ num_to_keep = 30
 eq_split = 0.5
 target_r_order = 2
 target_th_order = 2
-target_Q = 50.
+target_Q = 6.
 target_symmetric = True
 target_region='equator'
 
 wt_T = 1.
-wt_Q = 1.
+wt_Q = 1e2
 wt_r_order = 1e1
 wt_th_order = 1.
 wt_region = 1.
@@ -40,7 +40,7 @@ plot_vel = True
 tol = 1e-6
 
 data_dir = [
-    '../data/m0_140km_1.00to4.00N_constant_0.60mTBr_70k_200l/',
+    # '../data/m0_140km_1.00to4.00N_constant_0.60mTBr_70k_200l/',
     '../data/m6_140km_1.00to4.00N_constant_0.60mTBr_70k_200l/',
 ]
 
