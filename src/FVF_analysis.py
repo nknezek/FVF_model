@@ -10,6 +10,7 @@ def filter_by_misfit(model, vals, vecs, num_to_keep, target_T=None, target_Q=Non
         mf[i] = misfit_result(model, val, vec, target_T=target_T, target_Q=target_Q, target_r_order=target_r_order,
                                    target_th_order=target_th_order, target_region=target_region,
                                    eq_cutoff=eq_cutoff, target_symmetric=target_symmetric,
+
                                 th_ord_var=th_ord_var, r_ord_var=r_ord_var, eq_var=eq_var,
                                    wt_T=wt_T, wt_Q=wt_Q, wt_r_order=wt_r_order, wt_th_order=wt_th_order,
                                     wt_region=wt_region, wt_sym=wt_sym, wt_r_sm=wt_r_sm, wt_th_sm=wt_th_sm)
@@ -33,6 +34,15 @@ def filter_by_rth_zeros(model, vals, vecs):
                 fvecs.append(vec)
     return fvals, fvecs
 
+def filter_by_power_in_layers(model, vals, vecs, min_layer_power_misfit=0.5):
+    fvals = []
+    fvecs = []
+    for val, vec in zip(vals, vecs):
+        if misfit_power_in_layers(model, vec, var='ur', split=50, layer_want=1) > min_layer_power_misfit:
+            fvals.append(val)
+            fvecs.append(vec)
+    return fvals, fvecs
+
 
 def misfit_result(model, val, vec, target_T=None, target_Q=None, target_r_order=0, target_th_order=0, target_region='equator',
                           eq_cutoff=0.5, target_symmetric=True,
@@ -40,6 +50,10 @@ def misfit_result(model, val, vec, target_T=None, target_Q=None, target_r_order=
                           wt_T=1., wt_Q=1., wt_r_order=1., wt_th_order=1., wt_region=1., wt_sym=1., wt_r_sm=1, wt_th_sm=1.):
     mfsq = 0.
     nummf = 0.
+    ## TODO FIX THIS
+    mf_layer = misfit_power_in_layers(model, vec)
+    wt_layer = 2e2
+    mfsq += (mf_layer*wt_layer)**2
     if target_T is not None:
         mf_T = misfit_T(model, val, target_T)
         # print("\n T mf = {0}".format(mf_T))
@@ -80,6 +94,7 @@ def misfit_result(model, val, vec, target_T=None, target_Q=None, target_r_order=
         # print("r sm mf = {0}".format(mf_r_sm))
         mfsq += (mf_r_sm*wt_r_sm)**2
         nummf +=1
+
     return (mfsq/nummf)**0.5
 
 
@@ -127,6 +142,15 @@ def misfit_smoothness_th(model, vec, var='uph'):
 def misfit_smoothness_r(model, vec, var='uph'):
     y = (model.get_variable(vec, var)).real
     return saturation(np.mean(np.abs(y[2:,:]+y[:-2,:]-2*y[1:-1,:]))/np.mean(np.abs(y)), c=1)
+
+def misfit_power_in_layers(model, vec, var='ur', split=50, layer_want=1):
+    var_out = model.get_variable(vec, var)
+    layer_power0 = np.mean(np.abs(var_out[:split,:]))
+    layer_power1 = np.mean(np.abs(var_out[split:,:]))
+    if layer_want == 0:
+        return 0.5+0.5*(layer_power0-layer_power1)/(layer_power0+layer_power1)
+    else:
+        return 0.5-0.5*(layer_power0-layer_power1)/(layer_power0+layer_power1)
 
 def apply_d2(model, vec):
     try:

@@ -191,6 +191,7 @@ def solve_for_combo(c):
 
         # filter by number of r/th zero crossings
         fvals, fvecs = fana.filter_by_rth_zeros(model, vals, vecs)
+
         # print('filtered out {0} eigenvectors because of too many zeros'.format(len(vals)-len(fvals)))
         # Filter by fit to given parameter choices
         fvals, fvecs = fana.filter_by_misfit(model, fvals, fvecs, num_to_keep, target_T=T, target_Q=target_Q,
