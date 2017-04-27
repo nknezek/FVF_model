@@ -93,7 +93,7 @@ def solve_for_combo(c):
     # Convert Time in years to model frequency
     t_star = (23.9345*3600)/(2*np.pi)
     Target_j = 2*np.pi/(T*365.25*24*3600/t_star)*1j
-    Target = Target_j + Target_j*1j/(2*target_Q)
+    Target = Target_j + Target_j*1j/(2*cfg.target_Q)
 
     # Find which CC matrix to use
     dCyr_list = futil.find_available_skin_depths(data_dir)

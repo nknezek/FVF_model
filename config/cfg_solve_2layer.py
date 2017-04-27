@@ -3,6 +3,7 @@ import numpy as np
 """ Configuration File for SLEPc Run solving MAC model """
 
 T_list = [ -8, -10, -50, -500]
+target_Q = 5.
 
 num_solutions_to_calculate = 300
 num_solutions_to_plot = 40
