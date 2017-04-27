@@ -5,7 +5,7 @@ import numpy as np
 T_list = [-4, -5, -6, -7, -8, -9, -10, -11]
 
 nev = 300
-num_to_keep = 30
+num_to_keep = 100
 
 eq_split = 0.5
 target_r_order = 2

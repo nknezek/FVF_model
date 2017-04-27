@@ -5,19 +5,19 @@ import numpy as np
 model_type = "MAC_model"
 
 # mode to simulate (longitudinal)
-m = [6]
+m = [0,6]
 
 # layer thickness in (m)
-h = [140e3]
+h = [200e3]
 
 # Size of grid
-Nk = 70 # Radial cells
+Nk = 100 # Radial cells
 Nl = 200 # Latitudinal cells
 
 # Buoyancy Frequency
 # choices: constant, linear, set
 buoy_type = 'set'
-h_upper = 40e3
+h_upper = 60e3
 dr = np.array(h)/Nk
 N_upper = 4
 N_lower = 1
@@ -44,7 +44,7 @@ Bthmult = 0.
 Bph = 0.
 use_Bth = False
 
-dCyr = [60., 180., 500.]  # Period of wave for magnetic boundary condition (years)
+dCyr = [8., 50., 180., 500.]  # Period of wave for magnetic boundary condition (years)
 
 
 # Define Physical Constants
