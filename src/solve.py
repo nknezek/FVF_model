@@ -35,9 +35,6 @@ filemodel = cfg.filemodel
 fileA = cfg.fileA
 fileB = cfg.fileB
 savefile = cfg.savefile
-plot_robinson = cfg.plot_robinson
-plot_B_obs = cfg.plot_B_obs
-plot_vel = cfg.plot_vel
 tol = cfg.tol
 
 # Iterate over parameters that can vary
