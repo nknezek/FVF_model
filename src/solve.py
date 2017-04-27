@@ -30,20 +30,7 @@ except:
 
 
 # Import constant parameters from config file
-wt_T=cfg.wt_T
-nev = cfg.nev
-target_Q = cfg.target_Q
-wt_Q=cfg.wt_Q
-target_th_order = cfg.target_th_order
-wt_th_order=cfg.wt_th_order
-target_r_order = cfg.target_r_order
-wt_r_order=cfg.wt_r_order
-num_to_keep = cfg.num_to_keep
-wt_region=cfg.wt_region
-wt_sym=cfg.wt_sym
-eq_split = cfg.eq_split
-eq_var = cfg.eq_var
-real_var = cfg.real_var
+num_solutions_to_calculate = cfg.num_solutions_to_calculate
 filemodel = cfg.filemodel
 fileA = cfg.fileA
 fileB = cfg.fileB
@@ -138,7 +125,7 @@ def solve_for_combo(c):
     #==============================================================================
     try:
         EPS = slepc4py.SLEPc.EPS().create()
-        EPS.setDimensions(nev, petsc4py.PETSc.DECIDE)
+        EPS.setDimensions(num_solutions_to_calculate, petsc4py.PETSc.DECIDE)
         EPS.setOperators(A, B)
         EPS.setType(EPS.Type.KRYLOVSCHUR)
         EPS.setProblemType(slepc4py.SLEPc.EPS.ProblemType.PGNHEP)
@@ -148,8 +135,7 @@ def solve_for_combo(c):
         EPS.setFromOptions()
         ST = EPS.getST()
         ST.setType(slepc4py.SLEPc.ST.Type.SINVERT)
-        logger.info('solver set up, Period = {0:.1f}, nev = {1}'.format(T, nev))
-        logger.info('eigenvalue target = {0:.1e}'.format(Target))
+        logger.info('Solver set up, Target Period = {0:.1f}, Number of solutions to calculate = {1}'.format(T, num_solutions_to_calculate))
     except:
         logger.error( "Could not set up SLEPc solver ", exc_info=1)
 
@@ -182,25 +168,12 @@ def solve_for_combo(c):
     #==============================================================================
     try:
         logger.info('Filtering Eigenvalues:')
-        #%% Convert Eigenvectors to uph real
-        vecs_tmp = []
-        for vec in vecs:
-            vecs_tmp.append(fana.shift_vec_real(model, vec, var=real_var))
-        vecs = vecs_tmp
-        logger.info('\t{0} eigenvectors shifted so that {1} is real to plot'.format(len(vecs), real_var))
 
-        # filter by number of r/th zero crossings
-        fvals, fvecs = fana.filter_by_rth_zeros(model, vals, vecs)
+        # filter results to keep only those that satisfy requirements specified in filter_dict
+        fvals, fvecs = fana.filter_results(model, vals, vecs, cfg.filter_dict)
 
-        # print('filtered out {0} eigenvectors because of too many zeros'.format(len(vals)-len(fvals)))
-        # Filter by fit to given parameter choices
-        fvals, fvecs = fana.filter_by_misfit(model, fvals, fvecs, num_to_keep, target_T=T, target_Q=target_Q,
-                                            target_th_order=target_th_order, target_r_order=target_r_order,
-                                            target_region=cfg.target_region, eq_cutoff=0.5, target_symmetric=True,
-                                             wt_T=wt_T, wt_Q=wt_Q, wt_r_order=wt_r_order,
-                                             wt_th_order=wt_th_order, wt_region=wt_region, wt_sym=wt_sym,
-                                             wt_r_sm=cfg.wt_r_sm, wt_th_sm=cfg.wt_th_sm,
-                                             th_ord_var=cfg.th_ord_var, r_ord_var=cfg.r_ord_var, eq_var=cfg.eq_var)
+        # Sort by fit to given parameter choices
+        svals, svecs = fana.sort_by_misfit(model, fvals, fvecs, cfg.misfit_dict)
 
     except:
         logger.error("Problem Filtering Eigenvalues.", exc_info=1)
@@ -218,29 +191,26 @@ def solve_for_combo(c):
     #==============================================================================
     try:
         logger.info('Plotting:')
-        for ind, (val, vec) in enumerate(zip(fvals,fvecs)):
-            Period = (2*np.pi/val.imag)*model.t_star/(24.*3600.*365.25)
-            Decay = (2*np.pi/val.real)*model.t_star/(24.*3600.*365.25)
-            Q = abs(val.imag/(2*val.real))
+
+        for ind in range(cfg.num_solutions_to_plot):
+            val = svals[ind]
+            vec = fana.shift_vec_real(model, svecs[ind], var='uth')
+            vec = fana.normalize_vec(vec, 10)
+            Period = fana.get_period(model, val)
+            Q = fana.get_Q(model, val)
             r_ord = fana.get_r_zero_crossings(model, vec, var=cfg.r_ord_var)
             th_ord = fana.get_theta_zero_crossings(model, vec, var=cfg.th_ord_var)
-
             if abs(Period) < 1.0:
                 title = ('{0:03d} m={5}, l={4}, k={3}, T={1:.2f}dys, Q={2:.2f}'.format(ind, Period*365.25, Q, r_ord, th_ord, model.m))
             else:
                 title = ('{0:03d} m={5}, l={4}, k={3}, T={1:.2f}yrs, Q={2:.2f}'.format(ind, Period, Q, r_ord, th_ord, model.m))
-            if plot_vel:
-                if (model.Nk > 1):
-                    fplt.plot_pcolormesh_rth(model, val, vec, dir_name=out_dir, title=title, physical_units=True)
+            if (model.Nk > 1):
+                fplt.plot_fast_solution(model, vec, title=title, dir_name=out_dir)
+            else:
+                if('br' in model.model_variables):
+                    fplt.plot_1D(model, vec, val, ind, dir_name=out_dir, title=title)
                 else:
-                    if('br' in model.model_variables):
-                        fplt.plot_1D(model, vec, val, ind, dir_name=out_dir, title=title)
-                    else:
-                        fplt.plot_1D_noB(model, vec, val, ind, dir_name=out_dir, title=title)
-            if plot_robinson:
-                fplt.plot_robinson(model, vec, model.m,  dir_name=out_dir, title=str(ind)+'_T{0:.2f}yrs_'.format(Period)+'Divergence')
-            if plot_B_obs:
-                fplt.plot_B_obs(model, vec, model.m,  dir_name=out_dir, title=title+'_Bperturb')
+                    fplt.plot_1D_noB(model, vec, val, ind, dir_name=out_dir, title=title)
             logger.info('\t plotted ind={0}, T={1:.2f}yrs (eig={2:.2e})'.format(ind, Period, val))
         logger.info('run complete')
     except:

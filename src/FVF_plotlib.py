@@ -12,8 +12,38 @@ import matplotlib.pyplot as plt
 import matplotlib.pylab as pyl
 import matplotlib as mpl
 from matplotlib import gridspec
+import FVF_analysis as fana
 
 colors = ['b','g','r','m','y','k','c']
+
+
+def plot_solutions(model, vals, vecs, plot_options, out_dir='./'):
+    for k in plot_options.keys():
+        opt = plot_options[k]
+        for ind in range(opt['num_to_plot']):
+            val = vals[ind]
+            vec = fana.shift_vec_real(model, vecs[ind], var=opt['real_var'])
+            if opt['physical_units']:
+                vec = fana.normalize_vec_physical_units(model, vec, opt['normalization_var'],
+                                                        opt['normalization_value'], velocity_type=opt['velocity_units'])
+            else:
+                vec = fana.normalize_vec(vec, 1.)
+            Period = fana.get_period(model, val)
+            Q = fana.get_Q(val)
+            r_ord = fana.get_order_r(model, vec, var=opt['order_r_var'])
+            th_ord = fana.get_order_th(model, vec, var=opt['order_th_var'])
+            if abs(Period) < 1.0:
+                title = ('{0:03d} m={5}, l={4}, k={3}, T={1:.2f}dys, Q={2:.2f}'.format(ind, Period * 365.25, Q, r_ord, th_ord, model.m))
+            else:
+                title = ('{0:03d} m={5}, l={4}, k={3}, T={1:.2f}yrs, Q={2:.2f}'.format(ind, Period, Q, r_ord, th_ord, model.m))
+            if k == 'full_solution':
+                if (model.Nk > 1):
+                    plot_full_solution(model, val, vec, dir_name=out_dir, title=title, physical_units=opt['physical_units'])
+                else:
+                    if ('br' in model.model_variables):
+                        plot_1D(model, vec, val, ind, dir_name=out_dir, title=title)
+                    else:
+                        plot_1D_noB(model, vec, val, ind, dir_name=out_dir, title=title)
 
 def plot_1D(model,vec,val,ind, dir_name='./',title='1D Wave Plot'):
     E = model.E
@@ -210,17 +240,11 @@ def plot_M(M,m):
     plt.grid()
     plt.savefig('./output/m={0}/M_matrix_m={0}.png'.format(m))
 
-def plot_pcolormesh_rth(model,val,vec,dir_name='./',title='pcolormesh MAC Wave Plot', physical_units = False):
+def plot_full_solution(model,val,vec,dir_name='./',title='pcolormesh MAC Wave Plot', physical_units = False):
     plt.close('all')
-    r_star = model.r_star
-    P_star = model.P_star
-    B_star = model.B_star
-    u_star = model.u_star
-    r = np.concatenate([model.rm[:,0], model.rp[-1:,0]],axis=0)*r_star/1e3
+    r = np.concatenate([model.rm[:,0], model.rp[-1:,0]],axis=0)*model.r_star/1e3
     th = np.concatenate([model.thm[0,:], model.thp[0,-1:]],axis=0)*180./np.pi
     rpl, thpl = np.meshgrid(r,th)
-    # rpl = np.concatenate([model.rm, model.rp[-1:,:]],axis=0)*r_star/1e3
-    # thpl = np.concatenate([model.thm, model.thp[-1:,:]]*180./np.pi
     fig = plt.figure(figsize=(14,14))
     fig.suptitle(title, fontsize=14)
     gs = gridspec.GridSpec(len(model.model_variables), 2, width_ratios=[100, 1])
@@ -235,19 +259,19 @@ def plot_pcolormesh_rth(model,val,vec,dir_name='./',title='pcolormesh MAC Wave P
         axes.append(plt.subplot(gs[ind*2+1]))
         if physical_units:
             if var in ['ur', 'uth', 'uph']:
-                var_data = var_data*u_star*31556.926
+                var_data = fana.convert_var_to_physical_units(model, var, var_data, velocity_type='km/yr')
                 axes[ind*3].set_title(var+' real (km/yr)')
                 axes[ind*3+1].set_title(var+' imag (km/yr)')
             elif var in ['br', 'bth', 'bph']:
-                var_data = var_data*B_star*1e3
+                var_data = fana.convert_var_to_physical_units(model, var, var_data)
                 axes[ind*3].set_title(var+' real (mT)')
                 axes[ind*3+1].set_title(var+' imag (mT)')
             elif var == 'r_disp':
-                var_data = var_data*r_star
+                var_data = fana.convert_var_to_physical_units(model, var, var_data)
                 axes[ind*3].set_title(var+' real (m)')
                 axes[ind*3+1].set_title(var+' imag (m)')
             elif var == 'p':
-                var_data = var_data*P_star
+                var_data = fana.convert_var_to_physical_units(model, var, var_data)
                 axes[ind*3].set_title(var+' real (Pa)')
                 axes[ind*3+1].set_title(var+' imag (Pa)')
         else:
@@ -261,8 +285,33 @@ def plot_pcolormesh_rth(model,val,vec,dir_name='./',title='pcolormesh MAC Wave P
         plt.colorbar(p, format='%.0e', cax=axes[ind*3+2], ticks=np.linspace(-var_max,var_max,4))
     fig.set_tight_layout(True)
     plt.subplots_adjust(top=0.95)
-#    plt.show()
     plt.savefig(dir_name+title+'.png')
+
+def plot_fast_solution(model, vec, title='fast solution', dir_name='./'):
+    variables_to_plot = ['uth', 'uph', 'bth', 'bph', 'p', 'r_disp']
+    r = np.concatenate([model.rm[:,0], model.rp[-1:,0]],axis=0)*model.r_star/1e3
+    th = np.concatenate([model.thm[0,:], model.thp[0,-1:]],axis=0)*180./np.pi
+    rpl, thpl = np.meshgrid(r,th)
+
+    vec = fana.shift_vec_real(model, vec, var='uth')
+
+    fig, axes = plt.subplots(len(variables_to_plot), 1, figsize=(8,6))
+    fig.suptitle(title, fontsize=14)
+    for ind, (var, ax) in enumerate(zip(variables_to_plot, axes)):
+        var_data = model.get_variable(vec, var)
+        if np.max(np.abs(var_data.real)) > np.max(np.abs(var_data.imag)):
+            z = var_data.real
+            zmax = np.max(np.abs(z))
+            ax.set_ylabel(var+' (Re)\n{:.1e}'.format(zmax))
+        else:
+            z = var_data.imag
+            zmax = np.max(np.abs(z))
+            ax.set_ylabel(var+' (Im)\n{:.1e}'.format(zmax))
+        p = ax.pcolormesh(thpl, rpl, z.T, cmap='RdBu', vmin=-zmax, vmax=zmax)
+        ax.set_yticks([])
+        ax.set_xticks([])
+    plt.savefig(dir_name+title+'.png')
+    plt.close()
 
 def plot_vel_AGU(model,vec,dir_name='./',title='Velocity for AGU', physical_units = False):
     var2plt = ['ur','uth','uph','bth','bph']
