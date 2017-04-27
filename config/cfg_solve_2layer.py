@@ -2,7 +2,7 @@
 import numpy as np
 """ Configuration File for SLEPc Run solving MAC model """
 
-T_list = [-4, -5, -6, -7, -8, -9, -10, -11]
+T_list = [-4, -5, -6, -7, -8, -9, -10, -11, -50, -500]
 
 nev = 300
 num_to_keep = 100
@@ -41,7 +41,9 @@ tol = 1e-6
 
 data_dir = [
     # '../data/m0_140km_1.00to4.00N_constant_0.60mTBr_70k_200l/',
-    '../data/m6_140km_1.00to4.00N_constant_0.60mTBr_70k_200l/',
+    # '../data/m6_140km_1.00to4.00N_constant_0.60mTBr_70k_200l/',
+    '../data/m0_200km_1.00to4.00N_constant_0.60mTBr_100k_200l/',
+    '../data/m6_200km_1.00to4.00N_constant_0.60mTBr_100k_200l/',
 ]
 
 notify_me_by_text = True
