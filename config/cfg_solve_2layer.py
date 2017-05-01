@@ -37,8 +37,10 @@ num_threads = None
 data_dir = [
     # '../data/m0_140km_1.00to4.00N_constant_0.60mTBr_70k_200l/',
     # '../data/m6_140km_1.00to4.00N_constant_0.60mTBr_70k_200l/',
-    '../data/m0_200km_1.00to4.00N_constant_0.60mTBr_100k_200l/',
-    '../data/m6_200km_1.00to4.00N_constant_0.60mTBr_100k_200l/',
+    # '../data/m0_200km_1.00to4.00N_constant_0.60mTBr_100k_200l/',
+    # '../data/m6_200km_1.00to4.00N_constant_0.60mTBr_100k_200l/',
+    '../data/m0_200km_1.01to4.01N_constant_0.60mTBr_100k_200l/',
+    '../data/m6_200km_1.01to4.01N_constant_0.60mTBr_100k_200l/',
 ]
 
 # file names
