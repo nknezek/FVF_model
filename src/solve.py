@@ -170,7 +170,7 @@ def solve_for_combo(c):
         fvals, fvecs = fana.filter_results(model, vals, vecs, cfg.filter_dict)
 
         # Sort by fit to given parameter choices
-        svals, svecs = fana.sort_by_misfit(model, fvals, fvecs, cfg.misfit_dict)
+        svals, svecs = fana.sort_by_total_misfit(model, fvals, fvecs, cfg.misfit_dict)
 
     except:
         logger.error("Problem Filtering Eigenvalues.", exc_info=1)
