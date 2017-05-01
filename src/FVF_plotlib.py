@@ -281,6 +281,57 @@ def plot_full_solution(model,val,vec,dir_name='./',title='pcolormesh MAC Wave Pl
         axes[ind*3].pcolormesh(thpl,rpl,var_data.real.T, cmap='RdBu',vmin=-var_max, vmax=var_max)
         axes[ind*3].set_ylabel('radius (km)')
         p = axes[ind*3+1].pcolormesh(thpl,rpl,var_data.imag.T, cmap='RdBu',vmin=-var_max, vmax=var_max)
+        axes[ind*3].set_ylim(r[0], r[-1])
+        axes[ind*3+1].set_ylim(r[0], r[-1])
+        axes[ind*3+1].get_yaxis().set_ticks([])
+        plt.colorbar(p, format='%.0e', cax=axes[ind*3+2], ticks=np.linspace(-var_max,var_max,4))
+    fig.set_tight_layout(True)
+    plt.subplots_adjust(top=0.95)
+    plt.savefig(dir_name+title+'.png')
+
+def plot_full_solution_enhance_layer(model,val,vec,dir_name='./',title='pcolormesh MAC Wave Plot', physical_units = False, layer_min_ind=70, layer_max_ind=-1):
+    plt.close('all')
+    r = np.concatenate([model.rm[:,0], model.rp[-1:,0]],axis=0)*model.r_star/1e3
+    th = np.concatenate([model.thm[0,:], model.thp[0,-1:]],axis=0)*180./np.pi
+    rpl, thpl = np.meshgrid(r,th)
+    fig = plt.figure(figsize=(14,14))
+    fig.suptitle(title, fontsize=14)
+    gs = gridspec.GridSpec(len(model.model_variables), 2, width_ratios=[100, 1])
+    axes = []
+    gs_data_list = []
+    for ind, var in enumerate(model.model_variables):
+        gs_data_list.append(gridspec.GridSpecFromSubplotSpec(1, 2, subplot_spec=gs[ind*2], wspace=0.01))
+
+        var_data = model.get_variable(vec, var)
+        axes.append(plt.subplot(gs_data_list[ind][0]))
+        axes.append(plt.subplot(gs_data_list[ind][1]))
+        axes.append(plt.subplot(gs[ind*2+1]))
+        if physical_units:
+            if var in ['ur', 'uth', 'uph']:
+                var_data = fana.convert_var_to_physical_units(model, var, var_data, velocity_type='km/yr')
+                axes[ind*3].set_title(var+' real (km/yr)')
+                axes[ind*3+1].set_title(var+' imag (km/yr)')
+            elif var in ['br', 'bth', 'bph']:
+                var_data = fana.convert_var_to_physical_units(model, var, var_data)
+                axes[ind*3].set_title(var+' real (mT)')
+                axes[ind*3+1].set_title(var+' imag (mT)')
+            elif var == 'r_disp':
+                var_data = fana.convert_var_to_physical_units(model, var, var_data)
+                axes[ind*3].set_title(var+' real (m)')
+                axes[ind*3+1].set_title(var+' imag (m)')
+            elif var == 'p':
+                var_data = fana.convert_var_to_physical_units(model, var, var_data)
+                axes[ind*3].set_title(var+' real (Pa)')
+                axes[ind*3+1].set_title(var+' imag (Pa)')
+        else:
+            axes[ind*3].set_title(var+' real')
+            axes[ind*3+1].set_title(var+' imag')
+        var_max = np.amax(abs(var_data[layer_min_ind:layer_max_ind,:]))
+        axes[ind*3].pcolormesh(thpl,rpl,var_data.real.T, cmap='RdBu',vmin=-var_max, vmax=var_max)
+        axes[ind*3].set_ylabel('radius (km)')
+        p = axes[ind*3+1].pcolormesh(thpl,rpl,var_data.imag.T, cmap='RdBu',vmin=-var_max, vmax=var_max)
+        axes[ind*3].set_ylim(r[0], r[-1])
+        axes[ind*3+1].set_ylim(r[0], r[-1])
         axes[ind*3+1].get_yaxis().set_ticks([])
         plt.colorbar(p, format='%.0e', cax=axes[ind*3+2], ticks=np.linspace(-var_max,var_max,4))
     fig.set_tight_layout(True)

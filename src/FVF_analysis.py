@@ -164,9 +164,9 @@ def misfit_power_in_layers(model, vec, parameters):
     layer_power0 = np.mean(np.abs(var_out[:split_index,:]))
     layer_power1 = np.mean(np.abs(var_out[split_index:,:]))
     if layer_want == 0:
-        return 0.5+0.5*(layer_power0-layer_power1)/(layer_power0+layer_power1)
-    else:
         return 0.5-0.5*(layer_power0-layer_power1)/(layer_power0+layer_power1)
+    else:
+        return 0.5+0.5*(layer_power0-layer_power1)/(layer_power0+layer_power1)
 
 def saturation(x, c=1):
     return x/(x+c)
