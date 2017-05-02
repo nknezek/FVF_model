@@ -427,7 +427,7 @@ def plot_vel_AGU(model,vec,dir_name='./',title='Velocity for AGU', physical_unit
 
 def plot_buoyancy_struct(model, dir_name='./', title='buoyancy_structure'):
     plt.close('all')
-    drho_dr = -model.omega_g**2*model.rho/model.g  # density gradient
+    drho_dr = -(model.N/model.t_star)**2*model.rho/model.g  # density gradient
     fig = plt.figure(figsize=(10,5))
     plt.subplot(1,2,1)
     drho = np.zeros((model.Nk,1))
@@ -440,14 +440,14 @@ def plot_buoyancy_struct(model, dir_name='./', title='buoyancy_structure'):
     plt.xlabel('density perturbation off adiabat (kg/m^4)')
 
     plt.subplot(1,2,2)
-    xplt = model.omega_g[:,model.Nl//2]*model.t_star
+    xplt = model.N[:,model.Nl//2]
     yplt = (model.r[:,0]-1)*model.r_star/1000
     plt.plot(xplt,yplt)
     plt.xlim(xmin=0., xmax=np.max(xplt)*1.1)
     plt.ylim(ymin=np.min(yplt), ymax=np.max(yplt))
-    plt.title('buoyancy frequency')
+    plt.title('buoyancy frequency (N)')
     plt.ylabel('depth below CMB (km)')
-    plt.xlabel('buoyancy frequency (omega_g/Omega)')
+    plt.xlabel('N (Omega = 2pi/24hrs)')
     fig.set_tight_layout(True)
     plt.savefig(dir_name+title+'.png')
 
@@ -484,12 +484,12 @@ def plot_B(model, dir_name='./', title='B field structure'):
     fig.set_tight_layout(True)
     plt.savefig(dir_name+title+'.png')
 
-def plot_Uphi(model, dir_name='./', title='Uphi structure'):
+def plot_Vphi(model, dir_name='./', title='Vphi structure'):
     plt.close('all')
     fig = plt.figure(figsize=(10,5))
-    plt.pcolor(model.th*180./np.pi, (model.r-1)*model.r_star/1000, model.Uphi*model.u_star)
+    plt.pcolor(model.th*180./np.pi, (model.r-1)*model.r_star/1000, model.Vphi*model.u_star, cmap='PuOr')
     plt.colorbar()
-    plt.title('Uphi background velocity field')
+    plt.title('Vphi background velocity field')
     plt.ylabel('depth below CMB (km)')
     plt.xlabel('colatitude in degrees')
     fig.set_tight_layout(True)

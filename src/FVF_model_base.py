@@ -169,15 +169,15 @@ class Model():
         self.physical_constants['delta_C'] = self.delta_C
         return self.delta_C
 
-    def set_Uphi(self, Uphi):
+    def set_Vphi(self, Vphi):
         '''Sets the background velocity field in m/s'''
-        if isinstance(Uphi, (float, int)):
-            self.Uphi = np.ones((self.Nk, self.Nl))*Uphi
-        elif isinstance(Uphi, np.ndarray):
-            self.Uphi = Uphi
+        if isinstance(Vphi, (float, int)):
+            self.Vphi = np.ones((self.Nk, self.Nl))*Vphi
+        elif isinstance(Vphi, np.ndarray):
+            self.Vphi = Vphi
         else:
-            raise TypeError("The value passed for Uphi must be either an int, float, or np.ndarray")
-        self.U0 = self.Uphi*self.r_star/self.t_star
+            raise TypeError("The value passed for Vphi must be either an int, float, or np.ndarray")
+        self.U0 = self.Vphi*self.r_star/self.t_star
         return None
 
     def set_buoyancy_from_density_gradient(self, drho_dr):
@@ -407,9 +407,9 @@ class Model():
         gradBrobsT = -2*np.ones((self.Nk, self.Nl))*sin(self.th)/self.R
         self.gradBrobs = gradBrobsT/self.B_star*self.r_star
         self.add_gov_equation('Bobs', self.model_variables[0])
-        self.Bobs.add_term('uth', self.gradBrobs)
-        self.Bobs.add_dth('uth', C= self.Brobs)
-        self.Bobs.add_dph('uph', C= self.Brobs)
+        self.Bobs.add_term('vth', self.gradBrobs)
+        self.Bobs.add_dth('vth', C= self.Brobs)
+        self.Bobs.add_dph('vph', C= self.Brobs)
         self.BobsMat = coo_matrix((self.Bobs.vals, (self.Bobs.rows, self.Bobs.cols)),
                                   shape=(self.SizeM, self.SizeM))
         return self.BobsMat
@@ -644,9 +644,9 @@ class GovEquation():
         self.add_term(var, C*self.model.ddr_km1_ccb0, kdiff=-1, k_vals=k_vals, l_vals=l_vals)
         self.add_term(var, C*self.model.ddr_ccb0, k_vals=k_vals, l_vals=l_vals)
         if var == 'bth':
-            self.add_dr_u_ccb0('uth', C=C, l_vals=l_vals)
+            self.add_dr_u_ccb0('vth', C=C, l_vals=l_vals)
         elif var =='bph':
-            self.add_dr_u_ccb0('uph', C=C, l_vals=l_vals)
+            self.add_dr_u_ccb0('vph', C=C, l_vals=l_vals)
         else:
             raise ValueError('dr_ccb0 should only be used for bth or bph terms')
 
@@ -717,9 +717,9 @@ class GovEquation():
         self.add_term(var, C*self.model.d2_lm1_ccb0, ldiff=-1, k_vals=k_vals, l_vals=l_vals)
         self.add_term(var, C*self.model.d2_ccb0, k_vals=k_vals, l_vals=l_vals)
         if var == 'bth':
-            self.add_d2_u_ccb0('uth', C=C, l_vals=l_vals)
+            self.add_d2_u_ccb0('vth', C=C, l_vals=l_vals)
         elif var =='bph':
-            self.add_d2_u_ccb0('uph', C=C, l_vals=l_vals)
+            self.add_d2_u_ccb0('vph', C=C, l_vals=l_vals)
         else:
             raise ValueError('d2_ccb0 should only be used for bth or bph terms')
 

@@ -40,7 +40,7 @@ ep = cfg.ep
 # create list of all combinations of iteratable parameters
 iter_param_names = ['m', 'Nk', 'Nl', 'h', 'nu', 'eta', 'dCyr',
                     'B_type', 'Bd', 'Br', 'Bth','Bph','Brconst', 'Brnoise','Brmult', 'Bthconst', 'Bthnoise', 'Bthmult','use_Bth',
-                    'Uphi', 'buoyancy_type', 'N', 'model_type']
+                    'Vphi', 'buoyancy_type', 'N', 'model_type']
 iter_params = {}
 for name in iter_param_names:
     value = eval('cfg.'+name)
@@ -79,7 +79,7 @@ def make_matrix(c):
     dCyr = c['dCyr']
     buoyancy_type = c['buoyancy_type']
     N = c['N']
-    Uphi = c['Uphi']
+    Vphi = c['Vphi']
 
     # Directory name to save model
     dir_name = futil.get_directory_name(c)
@@ -102,7 +102,7 @@ def make_matrix(c):
         model.set_CC_skin_depth(dCyr)
     else:
         raise TypeError('dCyr not right type')
-    model.set_Uphi(Uphi)
+    model.set_Vphi(Vphi)
     model.make_operators()
 
     futil.ensure_dir(dir_name)
@@ -118,9 +118,9 @@ def make_matrix(c):
     fplt.plot_B(model, dir_name=dir_name)
     if cfg.verbose:
         print('plotted background magnetic field structure')
-    fplt.plot_Uphi(model, dir_name=dir_name)
+    fplt.plot_Vphi(model, dir_name=dir_name)
     if cfg.verbose:
-        print('plotted background Uphi structure')
+        print('plotted background Vphi structure')
 
     logger = flog.setup_custom_logger(dir_name=dir_name, filename='model.log', verbose=cfg.verbose)
     logger.info('\n' +
@@ -142,7 +142,7 @@ def make_matrix(c):
     'Bd = ' + str(c['Bd']) + '\n' +
     'Br = ' + str(model.Br.max()) + ' to ' + str(model.Br.min()) + '\n' +
     'Bth = ' + str(model.Bth.max()) + ' to ' + str(model.Bth.min()) + '\n' +
-    'Uph = ' + str(model.Uphi.max()) + ' to ' + str(model.Uphi.min()) + '\n' +
+    'Uph = ' + str(model.Vphi.max()) + ' to ' + str(model.Vphi.min()) + '\n' +
     'buoyancy_type = ' + str(buoyancy_type) + '\n' +
     'N = ' + str(N) +'\n' +
     'model variables = ' + str(model.model_variables) + '\n'
