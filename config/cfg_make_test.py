@@ -5,23 +5,19 @@ import numpy as np
 model_type = "MAC_model"
 
 # mode to simulate (longitudinal)
-m = [6]
+m = [0,6]
+
+# layer thickness in (m)
+h = [140e3]
 
 # Size of grid
-Nk = 4 # Radial cells
-Nl = 10 # Latitudinal cells
+Nk = 10 # Radial cells
+Nl = 20 # Latitudinal cells
 
-# Define Physical Constants
-R = 3480e3  # Outer core radius in (m)
-h = [50e3, 140e3]  # layer thickness in (m)
-Omega = 2*np.pi/(23.9345*3600.0)  # rotation rate in (rad/s)
-rho = 1.e4   # density in (kg/m^3)
-nu = [1e-2]   # momentum diffusivity in (m^2/s)
-eta = 0.8  # magnetic diffusivity in (m^2/s)
-mu_0 = 4.*np.pi*10.**-7  # vacuum permeability in (kg*m/(A^2s^2))
-g = 10.  # Gravity in m/s^2
-dCyr = [35., 600.]
-# dCyr = [65., 150., 300., 600.]
+# Buoyancy Frequency
+# choices: constant, linear, set
+buoy_type = 'constant'
+N = 1.
 
 # background magnetic field (Tesla)
 # choices: dipole, abs_dipole, constant, set
@@ -31,29 +27,42 @@ dCyr = [35., 600.]
 #   set: must specify [Br, Bth, Bph] as (Nk,Nl) arrays
 B_type = 'constant'
 Bd = 0.
-Br = 0.62e-3
+Br = 0.6e-3
 Brconst = 0.
 Brnoise = 0.
+Brmult = 1.
 Bth = 0.
 Bthconst = 0.
 Bthnoise = 0.
+Bthmult = 0.
 Bph = 0.
 use_Bth = False
 
-# background velocity field in (m/s)
-Uphi = 0.
+dCyr = [8., 500.]  # Period of wave for magnetic boundary condition (years)
 
-# Buoyancy Frequency
-# choices: constant, linear
-buoy_type = 'constant'
-buoy_ratio =  [1.0]
+
+# Define Physical Constants
+R = 3480e3  # Outer core radius in (m)
+Omega = 2*np.pi/(23.9345*3600.0)  # rotation rate in (rad/s)
+rho = 1.e4   # density in (kg/m^3)
+nu = [1e-2]   # momentum diffusivity in (m^2/s)
+eta = [0.8]  # magnetic diffusivity in (m^2/s)
+mu_0 = 4.*np.pi*10.**-7  # vacuum permeability in (kg*m/(A^2s^2))
+g = 10.  # Gravity in m/s^2
+
+# background velocity field in (m/s)
+Uphi = 0.0
 
 # model parameters
-model_variables = ('ur', 'uth', 'uph', 'br', 'bth', 'bph', 'p', 'r_disp')
-boundary_variables = ('ur', 'uth', 'uph', 'br', 'bth', 'bph', 'p')
-dir_suf = '_test'
-ep = 1e-3
+model_variables = ('vr', 'vth', 'vph', 'br', 'bth', 'bph', 'p', 'ur')
+boundary_variables = ('vr', 'vth', 'vph', 'br', 'bth', 'bph', 'p')
+dir_suf = '2layer'
+ep = 1e-4
 
 notify_me_by_text = True
 verbose = False
 num_threads = None
+
+
+
+

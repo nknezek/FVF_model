@@ -47,7 +47,6 @@ def get_directory_name(param_dict):
     folder_name += '_{0}k_{1}l/'.format(c['Nk'], c['Nl'])
     return folder_name
 
-
 def get_out_dir(out_dir_base, data_dir, num_data_dirs, T, num_T):
     out_dir = out_dir_base
     if num_data_dirs > 1:
@@ -93,8 +92,9 @@ def load_stored_data(filename):
 def make_lk_dict(model, vals, vecs, var='uth', cutoff=0.075):
     vdict = {}
     for val,vec in zip(vals,vecs):
-        l = fana.get_theta_zero_crossings(model, vec, var=var, cutoff=cutoff)
-        k = fana.get_r_zero_crossings(model, vec, var=var, cutoff=cutoff)
+
+        l = fana.get_order_th(model, vec, var=var, cutoff=cutoff)
+        k = fana.get_order_r(model, vec, var=var, cutoff=cutoff)
         if k not in vdict.keys():
             vdict[k] = {}
         if l not in vdict[k].keys():
