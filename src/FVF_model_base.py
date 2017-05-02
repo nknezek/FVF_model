@@ -182,19 +182,24 @@ class Model():
 
     def set_buoyancy_from_density_gradient(self, drho_dr):
         '''Sets the buoyancy structure of the layer given a density gradient'''
-        self.omega_g = np.sqrt(-self.g/self.rho*drho_dr)
-        self.N = self.omega_g**2*self.t_star**2
+        self.N_freq = np.sqrt(-self.g/self.rho*drho_dr) # buoyancy frequency in 1/s
+        self.N = self.N_freq*self.t_star # buoyancy frequency, non-dimensional form
 
-    def set_buoy_by_type(self, buoy_type, buoy_ratio):
-        '''sets the buoyancy frequency of the model given '''
-        self.omega_g0 = buoy_ratio*self.Omega
+    def set_buoy_by_type(self, buoy_type, N):
+        '''
+        sets buoyancy frequency of layer N is non-dimensional, N_freq has units of [1/s]
+
+        :param buoy_type: type of buoyancy: constant, linear, or set
+        :param N: Brunt-Vaisalla frequency in units of Omega (generally O(1) )
+        :return:
+        '''
         if buoy_type == 'constant':
-            self.omega_g = np.ones((self.Nk, self.Nl))*self.omega_g0
+            self.N = np.ones((self.Nk, self.Nl))*N
         elif buoy_type == 'linear':
-            self.omega_g = (np.ones((self.Nk, self.Nl)).T*np.linspace(0, self.omega_g0, self.Nk)).T
+            self.N = (np.ones((self.Nk, self.Nl)).T*np.linspace(0, N, self.Nk)).T
         elif buoy_type == 'set':
-            self.omega_g = self.omega_g0
-        self.N = self.omega_g**2*self.t_star**2
+            self.N = N
+        self.N_freq = self.N/self.t_star
 
     def get_index(self, k, l, var):
         '''

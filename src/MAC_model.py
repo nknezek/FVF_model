@@ -37,13 +37,13 @@ class Model(FVF_model_base.Model):
         # Momentum Equation ############
         ################################
         # R-momentum
-        self.add_gov_equation('rmom', 'ur')
+        self.add_gov_equation('rmom', 'vr')
         self.rmom.add_drP('p', C= -1)
-        self.rmom.add_term('r_disp', -N**2)
-        # self.rmom.add_term('uph', 2.0*sin(th))
-        self.rmom.add_d2_b0('ur', C= E)
-        self.rmom.add_d2r_th('uth', C= E)
-        self.rmom.add_d2r_ph('uph', C= E)
+        self.rmom.add_term('ur', -N**2)
+        # self.rmom.add_term('vph', 2.0*sin(th))
+        self.rmom.add_d2_b0('vr', C= E)
+        self.rmom.add_d2r_th('vth', C= E)
+        self.rmom.add_d2r_ph('vph', C= E)
         # self.rmom.add_dr_b0('br', C= E/Pm*Br)
         # self.rmom.add_dr_ccb0('bth', C= -E/Pm*Bth)
         # self.rmom.add_dr_ccb0('bph', C= -E/Pm*Bph)
@@ -57,12 +57,12 @@ class Model(FVF_model_base.Model):
         del self.rmom
 
         # Theta-Momentum
-        self.add_gov_equation('tmom', 'uth')
+        self.add_gov_equation('tmom', 'vth')
         self.tmom.add_dthP('p', C= -1)
-        self.tmom.add_term('uph', 2.0*cos(th))
-        self.tmom.add_d2_bd0('uth', C= E)
-        self.tmom.add_d2th_r('ur', C= E)
-        self.tmom.add_d2th_ph('uph', C= E)
+        self.tmom.add_term('vph', 2.0*cos(th))
+        self.tmom.add_d2_bd0('vth', C= E)
+        self.tmom.add_d2th_r('vr', C= E)
+        self.tmom.add_d2th_ph('vph', C= E)
         self.tmom.add_dr_ccb0('bth', C= E/Pm*Br)
         # self.tmom.add_dr_bd0('br', C= -E/Pm*Bth)
         # self.tmom.add_dth('bth', C= E/Pm*Bth)
@@ -76,13 +76,13 @@ class Model(FVF_model_base.Model):
         del self.tmom
 
         # Phi-Momentum
-        self.add_gov_equation('pmom', 'uph')
+        self.add_gov_equation('pmom', 'vph')
         self.pmom.add_dphP('p', C= -1)
-        self.pmom.add_term('uth', -2.0*cos(th))
-        # self.pmom.add_term('ur', 2.0*sin(th))
-        self.pmom.add_d2_bd0('uph', C= E)
-        self.pmom.add_d2ph_r('ur', C= E)
-        self.pmom.add_d2ph_th('uth', C= E)
+        self.pmom.add_term('vth', -2.0*cos(th))
+        # self.pmom.add_term('vr', 2.0*sin(th))
+        self.pmom.add_d2_bd0('vph', C= E)
+        self.pmom.add_d2ph_r('vr', C= E)
+        self.pmom.add_d2ph_th('vth', C= E)
         self.pmom.add_dr_ccb0('bph', C= E/Pm*Br)
         # self.pmom.add_dr_bd0('br', C= -E/Pm*Bph)
         # self.pmom.add_dth('bph', C= E/Pm*Bth)
@@ -111,10 +111,10 @@ class Model(FVF_model_base.Model):
 
         # theta-Lorentz
         self.add_gov_equation('thlorentz', 'bth')
-        self.thlorentz.add_dr_bd0('uth', C= Br)
-        # self.thlorentz.add_dr_b0('ur', C= -Bth)
-        # self.thlorentz.add_dph('uth', C= Bph)
-        # self.thlorentz.add_dph('uph', C= -Bth)
+        self.thlorentz.add_dr_bd0('vth', C= Br)
+        # self.thlorentz.add_dr_b0('vr', C= -Bth)
+        # self.thlorentz.add_dph('vth', C= Bph)
+        # self.thlorentz.add_dph('vph', C= -Bth)
         self.thlorentz.add_d2_ccb0('bth', C= E/Pm)
         self.thlorentz.add_d2th_r('br', C= E/Pm)
         self.thlorentz.add_d2th_ph('bph', C= E/Pm)
@@ -125,10 +125,10 @@ class Model(FVF_model_base.Model):
 
         # phi-Lorentz
         self.add_gov_equation('phlorentz', 'bph')
-        self.phlorentz.add_dr_bd0('uph', C= Br)
-        # self.phlorentz.add_dr_b0('ur', C= -Bph)
-        # self.phlorentz.add_dth('uph', C= Bth)
-        # self.phlorentz.add_dth('uth', C= -Bph)
+        self.phlorentz.add_dr_bd0('vph', C= Br)
+        # self.phlorentz.add_dr_b0('vr', C= -Bph)
+        # self.phlorentz.add_dth('vph', C= Bth)
+        # self.phlorentz.add_dth('vth', C= -Bph)
         self.phlorentz.add_d2_ccb0('bph', C= E/Pm)
         self.phlorentz.add_d2ph_r('br', C= E/Pm)
         self.phlorentz.add_d2ph_th('bth', C= E/Pm)
@@ -139,21 +139,21 @@ class Model(FVF_model_base.Model):
 
         # Divergence (Mass Conservation) #########
         self.add_gov_equation('div', 'p')
-        self.div.add_dr_b0('ur')
-        self.div.add_dth('uth')
-        self.div.add_dph('uph')
+        self.div.add_dr_b0('vr')
+        self.div.add_dth('vth')
+        self.div.add_dph('vph')
         self.A_rows += self.div.rows
         self.A_cols += self.div.cols
         self.A_vals += self.div.vals
         del self.div
 
         # Displacement Equation #########
-        self.add_gov_equation('rdisp', 'r_disp')
-        self.rdisp.add_term('ur', np.ones((Nk,Nl)))
-        self.A_rows += self.rdisp.rows
-        self.A_cols += self.rdisp.cols
-        self.A_vals += self.rdisp.vals
-        del self.rdisp
+        self.add_gov_equation('ur', 'ur')
+        self.ur.add_term('vr', np.ones((Nk,Nl)))
+        self.A_rows += self.ur.rows
+        self.A_cols += self.ur.cols
+        self.A_vals += self.ur.vals
+        del self.ur
 
         self.A = FVF_model_base.coo_matrix((self.A_vals, (self.A_rows, self.A_cols)),
                                    shape=(self.SizeM, self.SizeM))
@@ -170,19 +170,19 @@ class Model(FVF_model_base.Model):
         self.B_cols = []
         self.B_vals = []
 
-        self.add_gov_equation('B_uth', 'uth')
-        self.B_uth.add_term('uth', ones)
-        self.B_rows = self.B_uth.rows
-        self.B_cols = self.B_uth.cols
-        self.B_vals = self.B_uth.vals
-        del self.B_uth
+        self.add_gov_equation('B_vth', 'vth')
+        self.B_vth.add_term('vth', ones)
+        self.B_rows = self.B_vth.rows
+        self.B_cols = self.B_vth.cols
+        self.B_vals = self.B_vth.vals
+        del self.B_vth
 
-        self.add_gov_equation('B_uph', 'uph')
-        self.B_uph.add_term('uph', ones)
-        self.B_rows += self.B_uph.rows
-        self.B_cols += self.B_uph.cols
-        self.B_vals += self.B_uph.vals
-        del self.B_uph
+        self.add_gov_equation('B_vph', 'vph')
+        self.B_vph.add_term('vph', ones)
+        self.B_rows += self.B_vph.rows
+        self.B_cols += self.B_vph.cols
+        self.B_vals += self.B_vph.vals
+        del self.B_vph
 
         self.add_gov_equation('B_thlorentz', 'bth')
         self.B_thlorentz.add_term('bth', ones)
@@ -198,12 +198,12 @@ class Model(FVF_model_base.Model):
         self.B_vals += self.B_phlorentz.vals
         del self.B_phlorentz
 
-        self.add_gov_equation('B_rdisp', 'r_disp')
-        self.B_rdisp.add_term('r_disp', ones)
-        self.B_rows += self.B_rdisp.rows
-        self.B_cols += self.B_rdisp.cols
-        self.B_vals += self.B_rdisp.vals
-        del self.B_rdisp
+        self.add_gov_equation('B_ur', 'ur')
+        self.B_ur.add_term('ur', ones)
+        self.B_rows += self.B_ur.rows
+        self.B_cols += self.B_ur.cols
+        self.B_vals += self.B_ur.vals
+        del self.B_ur
         self.B = FVF_model_base.coo_matrix((self.B_vals, (self.B_rows, self.B_cols)),
                                    shape=(self.SizeM, self.SizeM))
         del self.B_vals, self.B_rows, self.B_cols
