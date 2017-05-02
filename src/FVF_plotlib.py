@@ -425,7 +425,7 @@ def plot_vel_AGU(model,vec,dir_name='./',title='Velocity for AGU', physical_unit
     plt.subplots_adjust(top=0.9)
     # plt.savefig(dir_name+title+'.png')
 
-def plot_buoy_struct(model, dir_name='./', title='buoyancy_structure'):
+def plot_buoyancy_struct(model, dir_name='./', title='buoyancy_structure'):
     plt.close('all')
     drho_dr = -model.omega_g**2*model.rho/model.g  # density gradient
     fig = plt.figure(figsize=(10,5))

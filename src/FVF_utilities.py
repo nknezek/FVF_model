@@ -11,11 +11,11 @@ def convert_model_freq_to_period_yrs(omega):
 
 def get_directory_name(param_dict):
     c = param_dict
-    folder_name = '../data/m{0:.0f}_{1:.0f}km_{}'.format(c['m'], c['h'] * 1e-3, c['N'])
-    if type(c['buoy_ratio']) is np.ndarray:
-        folder_name += '_{:.2f}to{:.2f}N'.format(np.min(c['buoy_ratio']), np.max(c['buoy_ratio']))
+    folder_name = '../data/m{0:.0f}_{1:.0f}km_{}'.format(c['m'], c['h'] * 1e-3, c['buoyancy_type'])
+    if type(c['N']) is np.ndarray:
+        folder_name += '_{:.2f}to{:.2f}N'.format(np.min(c['N']), np.max(c['N']))
     else:
-        folder_name += '_{:.2f}N'.format(c['buoy_ratio'])
+        folder_name += '_{:.2f}N'.format(c['N'])
     folder_name += '_{}'.format(c['B_type'])
     if c['Br'] > 0:
         if (c['Br'] * 1e3) >= 0.01:

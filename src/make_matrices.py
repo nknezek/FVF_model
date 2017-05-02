@@ -40,7 +40,7 @@ ep = cfg.ep
 # create list of all combinations of iteratable parameters
 iter_param_names = ['m', 'Nk', 'Nl', 'h', 'nu', 'eta', 'dCyr',
                     'B_type', 'Bd', 'Br', 'Bth','Bph','Brconst', 'Brnoise','Brmult', 'Bthconst', 'Bthnoise', 'Bthmult','use_Bth',
-                    'Uphi', 'buoy_type', 'buoy_ratio', 'model_type']
+                    'Uphi', 'buoyancy_type', 'N', 'model_type']
 iter_params = {}
 for name in iter_param_names:
     value = eval('cfg.'+name)
@@ -77,8 +77,8 @@ def make_matrix(c):
     nu = c['nu']
     eta = c['eta']
     dCyr = c['dCyr']
-    buoy_type = c['buoy_type']
-    buoy_ratio = c['buoy_ratio']
+    buoyancy_type = c['buoyancy_type']
+    N = c['N']
     Uphi = c['Uphi']
 
     # Directory name to save model
@@ -97,7 +97,7 @@ def make_matrix(c):
     model = locals()['fvf'].Model(model_variables, model_parameters, physical_constants)
     model.set_B_by_type(c['B_type'], Bd=c['Bd'], Br=c['Br'], Bth=c['Bth'], Bph=c['Bph'], use_Bth=c['use_Bth'],
                       Brconst=c['Brconst'], Brnoise=c['Brnoise'], Brmult=c['Brmult'], Bthconst=c['Bthconst'], Bthnoise=c['Bthnoise'], Bthmult=c['Bthmult'])
-    model.set_buoy_by_type(buoy_type=buoy_type, buoy_ratio=buoy_ratio)
+    model.set_buoyancy_by_type(buoyancy_type=buoyancy_type, N=N)
     if type(dCyr) == (float or int):
         model.set_CC_skin_depth(dCyr)
     else:
@@ -112,7 +112,7 @@ def make_matrix(c):
 
     # %% Save Model info
     #==============================================================================
-    fplt.plot_buoy_struct(model, dir_name=dir_name)
+    fplt.plot_buoyancy_struct(model, dir_name=dir_name)
     if cfg.verbose:
         print('plotted buoyancy structure')
     fplt.plot_B(model, dir_name=dir_name)
@@ -143,8 +143,8 @@ def make_matrix(c):
     'Br = ' + str(model.Br.max()) + ' to ' + str(model.Br.min()) + '\n' +
     'Bth = ' + str(model.Bth.max()) + ' to ' + str(model.Bth.min()) + '\n' +
     'Uph = ' + str(model.Uphi.max()) + ' to ' + str(model.Uphi.min()) + '\n' +
-    'buoy_type = ' + str(buoy_type) + '\n' +
-    'buoy_ratio = ' + str(buoy_ratio) +'\n' +
+    'buoyancy_type = ' + str(buoyancy_type) + '\n' +
+    'N = ' + str(N) +'\n' +
     'model variables = ' + str(model.model_variables) + '\n'
     )
     if cfg.verbose:

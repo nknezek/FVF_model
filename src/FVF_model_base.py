@@ -185,19 +185,19 @@ class Model():
         self.N_freq = np.sqrt(-self.g/self.rho*drho_dr) # buoyancy frequency in 1/s
         self.N = self.N_freq*self.t_star # buoyancy frequency, non-dimensional form
 
-    def set_buoy_by_type(self, buoy_type, N):
+    def set_buoyancy_by_type(self, buoyancy_type, N):
         '''
         sets buoyancy frequency of layer N is non-dimensional, N_freq has units of [1/s]
 
-        :param buoy_type: type of buoyancy: constant, linear, or set
+        :param buoyancy_type: type of buoyancy: constant, linear, or set
         :param N: Brunt-Vaisalla frequency in units of Omega (generally O(1) )
         :return:
         '''
-        if buoy_type == 'constant':
+        if buoyancy_type == 'constant':
             self.N = np.ones((self.Nk, self.Nl))*N
-        elif buoy_type == 'linear':
+        elif buoyancy_type == 'linear':
             self.N = (np.ones((self.Nk, self.Nl)).T*np.linspace(0, N, self.Nk)).T
-        elif buoy_type == 'set':
+        elif buoyancy_type == 'set':
             self.N = N
         self.N_freq = self.N/self.t_star
 
