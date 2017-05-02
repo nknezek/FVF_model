@@ -11,7 +11,7 @@ def convert_model_freq_to_period_yrs(omega):
 
 def get_directory_name(param_dict):
     c = param_dict
-    folder_name = '../data/m{0:.0f}_{1:.0f}km'.format(c['m'], c['h'] * 1e-3)
+    folder_name = '../data/m{0:.0f}_{1:.0f}km_{}'.format(c['m'], c['h'] * 1e-3, c['N'])
     if type(c['buoy_ratio']) is np.ndarray:
         folder_name += '_{:.2f}to{:.2f}N'.format(np.min(c['buoy_ratio']), np.max(c['buoy_ratio']))
     else:
