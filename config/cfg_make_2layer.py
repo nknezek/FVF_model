@@ -11,8 +11,8 @@ m = [0,6]
 h = [200e3]
 
 # Size of grid
-Nk = 100 # Radial cells
-Nl = 200 # Latitudinal cells
+Nk = 10 # Radial cells
+Nl = 20 # Latitudinal cells
 
 # Buoyancy Frequency
 # choices: constant, linear, set
@@ -57,7 +57,7 @@ mu_0 = 4.*np.pi*10.**-7  # vacuum permeability in (kg*m/(A^2s^2))
 g = 10.  # Gravity in m/s^2
 
 # background velocity field in (m/s)
-Uphi = 0.0
+Vphi = 0.0
 
 # model parameters
 model_variables = ('ur', 'uth', 'uph', 'br', 'bth', 'bph', 'p', 'r_disp')

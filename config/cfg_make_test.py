@@ -16,7 +16,7 @@ Nl = 20 # Latitudinal cells
 
 # Buoyancy Frequency
 # choices: constant, linear, set
-buoy_type = 'constant'
+buoyancy_type = 'constant'
 N = 1.
 
 # background magnetic field (Tesla)
@@ -51,7 +51,7 @@ mu_0 = 4.*np.pi*10.**-7  # vacuum permeability in (kg*m/(A^2s^2))
 g = 10.  # Gravity in m/s^2
 
 # background velocity field in (m/s)
-Uphi = 0.0
+Vphi = 0.0
 
 # model parameters
 model_variables = ('vr', 'vth', 'vph', 'br', 'bth', 'bph', 'p', 'ur')
