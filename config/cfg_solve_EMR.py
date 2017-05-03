@@ -2,7 +2,7 @@
 import numpy as np
 """ Configuration File for SLEPc Run solving MAC model """
 
-T_list = [-13., 13, -60., 60., -131, 131]
+T_list = [-13., 13, -60., 60., -331, 331]
 
 nev = 200
 num_to_keep = 50
