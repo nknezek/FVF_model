@@ -89,7 +89,7 @@ def load_stored_data(filename):
         d1 = dill.load(f)
     return d1['model'], d1['vals'], d1['vecs']
 
-def make_lk_dict(model, vals, vecs, var='uth', cutoff=0.075):
+def make_lk_dict(model, vals, vecs, var='vth', cutoff=0.075):
     vdict = {}
     for val,vec in zip(vals,vecs):
 
