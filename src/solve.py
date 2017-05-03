@@ -170,7 +170,7 @@ def solve_for_combo(c):
         fvals, fvecs = fana.filter_results(model, vals, vecs, cfg.filter_dict)
 
         # Sort by fit to given parameter choices
-        svals, svecs = fana.sort_by_total_misfit(model, fvals, fvecs, cfg.misfit_dict)
+        svals, svecs = fana.sort_by_total_misfit(model, fvals, fvecs, cfg.sort_dict)
 
     except:
         logger.error("Problem Filtering Eigenvalues.", exc_info=1)
@@ -180,7 +180,7 @@ def solve_for_combo(c):
     try:
         if savefile:
             dill.dump({'vals': fvals, 'vecs': fvecs, 'model':model},open(out_dir + savefile, 'wb'))
-            logger.info('vals and vecs saved to ' + out_dir + savefile)
+            logger.info('saved {0:d} vals and vecs saved to '.format(len(fvals)) + out_dir + savefile)
     except:
         logger.error("Problem Saving Filtered Eigenvalues.", exc_info=1)
 

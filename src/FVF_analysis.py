@@ -142,11 +142,11 @@ def misfit_region(model, vec, parameters):
 def misfit_symmetry(model, vec, parameters):
     var_out = model.get_variable(vec, parameters['var'])
     north_power = np.mean(np.abs(var_out[:, model.Nl//2:]))
-    south_power = np.mean(np.abs(var_out[:, :model.Nl//2]))
+    sovth_power = np.mean(np.abs(var_out[:, :model.Nl//2]))
     if parameters['target'] is 'symmetric':
-        return np.abs((north_power - south_power)/(north_power+south_power))
+        return np.abs((north_power - sovth_power)/(north_power+sovth_power))
     elif parameters['target'] is 'asymmetric':
-        return 1.-np.abs((north_power + south_power) / (north_power + south_power))
+        return 1.-np.abs((north_power + sovth_power) / (north_power + sovth_power))
 
 def misfit_smoothness_r(model, vec, parameters):
     y = (model.get_variable(vec, parameters['var'])).real
@@ -209,7 +209,7 @@ def normalize_vec(vec, normalization_value):
     return vec * normalization_value/np.max(np.abs(vec))
 
 def convert_var_to_physical_units(model, var, var_data, velocity_type='mm/s'):
-    if var in ['ur', 'uth', 'uph']:
+    if var in ['vr', 'vth', 'vph']:
         if velocity_type == 'mm/s':
             var_data = var_data * model.u_star
         elif velocity_type == 'km/yr':
@@ -218,13 +218,13 @@ def convert_var_to_physical_units(model, var, var_data, velocity_type='mm/s'):
             raise TypeError('velocity type is not understood')
     elif var in ['br', 'bth', 'bph']:
         var_data = var_data * model.B_star
-    elif var == 'r_disp':
+    elif var == 'ur':
         var_data = var_data * model.r_star
     elif var == 'p':
         var_data = var_data * model.P_star
     return var_data
 
-def get_order_th(model, vec, var='uth', cutoff=0.075):
+def get_order_th(model, vec, var='vth', cutoff=0.075):
     z = model.get_variable(vec, var)
     ind = np.argmax(np.mean(np.abs(z),axis=1))
     zi = z[ind,1:-1]
@@ -234,7 +234,7 @@ def get_order_th(model, vec, var='uth', cutoff=0.075):
     zeros = np.where(stripped_signs[1:] != stripped_signs[:-1])[0]
     return len(zeros)
 
-def get_order_r(model, vec, var='uph', cutoff=0.075):
+def get_order_r(model, vec, var='vph', cutoff=0.075):
     z = model.get_variable(vec, var)
     ind = np.argmax(np.mean(np.abs(z),axis=0))
     zi = z[1:-1,ind]

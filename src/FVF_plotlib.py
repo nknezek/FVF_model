@@ -67,7 +67,7 @@ def plot_1D(model,vec,val,ind, dir_name='./',title='1D Wave Plot'):
                   ax.plot(th*180./np.pi,out.T.imag,color=color)
                   ax.grid()
         if ind ==0:
-             labels = ['ur','uth','uph','br','bth','bph','p']
+             labels = ['vr','vth','vph','br','bth','bph','p']
              ax.legend([x[0] for x in line],labels,loc=0,ncol=4)
              ax.grid()
 
@@ -96,7 +96,7 @@ def plot_1D_noB(model,vec,val,ind, dir_name='./',title='1D Wave Plot'):
                   ax.plot(th*180./np.pi,out.T.imag,color=color)
                   ax.grid()
         if ind ==0:
-             labels = ['uth','uph','p']
+             labels = ['vth','vph','p']
              ax.legend([x[0] for x in line],labels,loc=0,ncol=4)
              ax.grid()
 
@@ -112,8 +112,8 @@ def plot_mollyweide(model,vec,val,m,l,v_scale=1.0):
    th = model.th[0,:]
    ## Calculate vector field and contour field for plotting with basemap
    ## Create full vector grid in theta and phi
-   u_1D = model.get_variable(vec,'uph')[0][0]
-   v_1D = model.get_variable(vec,'uth')[0][0]
+   u_1D = model.get_variable(vec,'vph')[0][0]
+   v_1D = model.get_variable(vec,'vth')[0][0]
    Nph = 2*Nl
    ph = np.linspace(-180.,180.-360./Nph,Nph)
    lon_grid, lat_grid = np.meshgrid(ph,th*180./np.pi-90.,)
@@ -143,7 +143,7 @@ def plot_B_obs(model, vec, m, dir_name='./', title='B-Perturbation at Core Surfa
    #### Display waves on a Spherical Map Projection
    projtype = 'robin'
    ## Create full vector grid in theta and phi
-   Bobsth = model.get_variable(model.BobsMat.tocsr()*vec, 'ur')[-1,:]
+   Bobsth = model.get_variable(model.BobsMat.tocsr()*vec, 'vr')[-1,:]
    Nph = 2*Nl
    ph = np.linspace(-180.,180.-360./Nph,Nph)
    lon_grid, lat_grid = np.meshgrid(ph,th*180./np.pi-90.,)
@@ -172,8 +172,8 @@ def plot_robinson(model, vec, m, v_scale=1.0, dir_name='./', title='Velocity and
    #### Display waves on a Spherical Map Projection
    projtype = 'robin'
    ## Create full vector grid in theta and phi
-   u_1D = model.get_variable(vec,'uph')[0][-1,:]
-   v_1D = model.get_variable(vec,'uth')[0][-1,:]
+   u_1D = model.get_variable(vec,'vph')[0][-1,:]
+   v_1D = model.get_variable(vec,'vth')[0][-1,:]
    Nph = 2*Nl
    ph = np.linspace(-180.,180.-360./Nph,Nph)
    lon_grid, lat_grid = np.meshgrid(ph,th*180./np.pi-90.,)
@@ -258,7 +258,7 @@ def plot_full_solution(model,val,vec,dir_name='./',title='pcolormesh MAC Wave Pl
         axes.append(plt.subplot(gs_data_list[ind][1]))
         axes.append(plt.subplot(gs[ind*2+1]))
         if physical_units:
-            if var in ['ur', 'uth', 'uph']:
+            if var in ['vr', 'vth', 'vph']:
                 var_data = fana.convert_var_to_physical_units(model, var, var_data, velocity_type='km/yr')
                 axes[ind*3].set_title(var+' real (km/yr)')
                 axes[ind*3+1].set_title(var+' imag (km/yr)')
@@ -266,7 +266,7 @@ def plot_full_solution(model,val,vec,dir_name='./',title='pcolormesh MAC Wave Pl
                 var_data = fana.convert_var_to_physical_units(model, var, var_data)
                 axes[ind*3].set_title(var+' real (mT)')
                 axes[ind*3+1].set_title(var+' imag (mT)')
-            elif var == 'r_disp':
+            elif var == 'ur':
                 var_data = fana.convert_var_to_physical_units(model, var, var_data)
                 axes[ind*3].set_title(var+' real (m)')
                 axes[ind*3+1].set_title(var+' imag (m)')
@@ -307,7 +307,7 @@ def plot_full_solution_enhance_layer(model,val,vec,dir_name='./',title='pcolorme
         axes.append(plt.subplot(gs_data_list[ind][1]))
         axes.append(plt.subplot(gs[ind*2+1]))
         if physical_units:
-            if var in ['ur', 'uth', 'uph']:
+            if var in ['vr', 'vth', 'vph']:
                 var_data = fana.convert_var_to_physical_units(model, var, var_data, velocity_type='km/yr')
                 axes[ind*3].set_title(var+' real (km/yr)')
                 axes[ind*3+1].set_title(var+' imag (km/yr)')
@@ -315,7 +315,7 @@ def plot_full_solution_enhance_layer(model,val,vec,dir_name='./',title='pcolorme
                 var_data = fana.convert_var_to_physical_units(model, var, var_data)
                 axes[ind*3].set_title(var+' real (mT)')
                 axes[ind*3+1].set_title(var+' imag (mT)')
-            elif var == 'r_disp':
+            elif var == 'ur':
                 var_data = fana.convert_var_to_physical_units(model, var, var_data)
                 axes[ind*3].set_title(var+' real (m)')
                 axes[ind*3+1].set_title(var+' imag (m)')
@@ -339,12 +339,12 @@ def plot_full_solution_enhance_layer(model,val,vec,dir_name='./',title='pcolorme
     plt.savefig(dir_name+title+'.png')
 
 def plot_fast_solution(model, vec, title='fast solution', dir_name='./'):
-    variables_to_plot = ['uth', 'uph', 'bth', 'bph', 'p', 'r_disp']
+    variables_to_plot = ['vth', 'vph', 'bth', 'bph', 'p', 'ur']
     r = np.concatenate([model.rm[:,0], model.rp[-1:,0]],axis=0)*model.r_star/1e3
     th = np.concatenate([model.thm[0,:], model.thp[0,-1:]],axis=0)*180./np.pi
     rpl, thpl = np.meshgrid(r,th)
 
-    vec = fana.shift_vec_real(model, vec, var='uth')
+    vec = fana.shift_vec_real(model, vec, var='vth')
 
     fig, axes = plt.subplots(len(variables_to_plot), 1, figsize=(8,6))
     fig.suptitle(title, fontsize=14)
@@ -365,7 +365,7 @@ def plot_fast_solution(model, vec, title='fast solution', dir_name='./'):
     plt.close()
 
 def plot_vel_AGU(model,vec,dir_name='./',title='Velocity for AGU', physical_units = False):
-    var2plt = ['ur','uth','uph','bth','bph']
+    var2plt = ['vr','vth','vph','bth','bph']
     plt.close('all')
     r_star = model.r_star
     P_star = model.P_star
@@ -373,15 +373,15 @@ def plot_vel_AGU(model,vec,dir_name='./',title='Velocity for AGU', physical_unit
     u_star = model.u_star
     rpl = model.r*r_star/1e3
     thpl = model.th*180./np.pi
-    ur = model.get_variable(vec, 'ur')*u_star
-    ur[:,::2] = ur[:,::2]*-1
-    urmax = np.amax(abs(ur))
-    uth = model.get_variable(vec, 'uth')*u_star
-    uth[:,::2] = uth[:,::2]*-1
-    uthmax = np.amax(abs(uth))
-    uph = model.get_variable(vec, 'uph')*u_star
-    uph[:,::2] = uph[:,::2]*-1
-    uphmax = np.amax(abs(uph))
+    vr = model.get_variable(vec, 'vr')*u_star
+    vr[:,::2] = vr[:,::2]*-1
+    vrmax = np.amax(abs(vr))
+    vth = model.get_variable(vec, 'vth')*u_star
+    vth[:,::2] = vth[:,::2]*-1
+    vthmax = np.amax(abs(vth))
+    vph = model.get_variable(vec, 'vph')*u_star
+    vph[:,::2] = vph[:,::2]*-1
+    vphmax = np.amax(abs(vph))
     bth = model.get_variable(vec, 'bth')*B_star
     bth[:,::2] = bth[:,::2]*-1
     bthmax = np.amax(abs(bth))
@@ -395,20 +395,20 @@ def plot_vel_AGU(model,vec,dir_name='./',title='Velocity for AGU', physical_unit
     ax = plt.subplot(511)
     plt.title('Radial Velocity')
     ax.set_xticklabels([])
-    p = plt.pcolormesh(thpl,rpl,ur.real, cmap='RdBu',vmin=-urmax, vmax=urmax)
-    plt.colorbar(p, format='%.0e', ticks=np.linspace(-urmax,urmax,4))
+    p = plt.pcolormesh(thpl,rpl,vr.real, cmap='RdBu',vmin=-vrmax, vmax=vrmax)
+    plt.colorbar(p, format='%.0e', ticks=np.linspace(-vrmax,vrmax,4))
 
     ax = plt.subplot(512)
     plt.title('Latiudinal Velocity')
     ax.set_xticklabels([])
-    p = plt.pcolormesh(thpl,rpl,uth.real, cmap='RdBu',vmin=-uthmax, vmax=uthmax)
-    plt.colorbar(p, format='%.0e', ticks=np.linspace(-uthmax,uthmax,4))
+    p = plt.pcolormesh(thpl,rpl,vth.real, cmap='RdBu',vmin=-vthmax, vmax=vthmax)
+    plt.colorbar(p, format='%.0e', ticks=np.linspace(-vthmax,vthmax,4))
 
     ax = plt.subplot(513)
-    plt.title('Azimuthal Velocity')
+    plt.title('Azimvthal Velocity')
     ax.set_xticklabels([])
-    p = plt.pcolormesh(thpl,rpl,uph.imag, cmap='RdBu',vmin=-uphmax, vmax=uphmax)
-    plt.colorbar(p, format='%.0e', ticks=np.linspace(-uphmax,uphmax,4))
+    p = plt.pcolormesh(thpl,rpl,vph.imag, cmap='RdBu',vmin=-vphmax, vmax=vphmax)
+    plt.colorbar(p, format='%.0e', ticks=np.linspace(-vphmax,vphmax,4))
 
     ax = plt.subplot(514)
     plt.title('Latitudinal Magnetic Field Perturbation')
@@ -417,7 +417,7 @@ def plot_vel_AGU(model,vec,dir_name='./',title='Velocity for AGU', physical_unit
     plt.colorbar(p, format='%.0e', ticks=np.linspace(-bthmax,bthmax,4))
 
     ax = plt.subplot(515)
-    plt.title('Azimuthal Magnetic Field Perturbation')
+    plt.title('Azimvthal Magnetic Field Perturbation')
     p = plt.pcolormesh(thpl,rpl,bph.real, cmap='RdBu',vmin=-bphmax, vmax=bphmax)
     plt.colorbar(p, format='%.0e', ticks=np.linspace(-bphmax,bphmax,4))
 
