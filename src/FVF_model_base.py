@@ -433,6 +433,7 @@ class Model():
         delta_C = self.delta_C/self.r_star
         E = self.E
         Pm = self.Pm
+        Br = self.Br
 
         # radial derivative arrays
         self.ddr_kp1 = rp**2/(2*r**2*dr)
@@ -456,12 +457,14 @@ class Model():
         self.ddr_bd0[0,:] = (rp[0,:]**2 - 2*rm[0,:]**2)/(2*r[0,:]**2*dr)
 
         # radial derivatives for Conducting core boundary conditions
-        self.ddr_kp1_ccb0 = np.array(self.ddr_kp1_b0)
+        self.ddr_kp1_ccb0 = np.array(self.ddr_kp1_b0, dtype=complex)
         self.ddr_km1_ccb0 = np.array(self.ddr_km1_b0)
+        self.ddr_ccb0 = np.array(self.ddr_b0, dtype=complex)
         self.ddr_km1_ccb0[0,:] = np.zeros(Nl)
-        self.ddr_ccb0 = np.array(self.ddr_b0)
-        self.ddr_ccb0[0,:] = rp[0,:]**2/(r[0,:]**2*2*dr)
-        self.ddr_v_ccb0 = -rm[0,:]**2/(r[0,:]**2*dr)
+        self.ddr_kp1_ccb0[0,:] = ( rp[0,:]**2/(2*r[0,:]**2*dr) - (rm[0,:]**2 * delta_C)/(r[0,:]**2*dr**2*(1+1j)) )
+        self.ddr_ccb0[0,:] = ( rp[0,:]**2/(2*r[0,:]**2*dr) + (rm[0,:]**2 * delta_C)/(r[0,:]**2*dr**2*(1+1j)) )
+        self.ddr_v_ccb0 = np.array(( -3*rm[0,:]**2*Pm*Br[0,:]*delta_C / (2*r[0,:]**2*dr*E*(2+1j)) ), ndmin=2)
+        self.ddr_v_kp1_ccb0 = np.array((1*rm[0,:]**2*Pm*Br[0,:]*delta_C / (2*r[0,:]**2*dr*E*(2+1j))), ndmin=2)
 
         # theta derivatives
         self.ddth_lp1 = sin(thp)/(2*r*sin(th)*dth)
@@ -527,16 +530,18 @@ class Model():
         self.d2_bd0[0,:] = (-((rp**2)/(r*dr)**2 + (sin(thp) + sin(thm))/(sin(th)*(r*dth)**2) + (m/(r*sin(th)))**2))[0,:]
 
         # Laplacian for conducting-core boundary (ccb), derivative=0  (bth, bph terms)
-        self.d2_kp1_ccb0 = np.array(self.d2_kp1_b0)
-        self.d2_km1_ccb0 = self.d2_km1_b0
-        self.d2_km1_ccb0[0,:] = np.zeros(Nl)
+        self.d2_kp1_ccb0 = np.array(self.d2_kp1_b0, dtype=complex)
+        self.d2_km1_ccb0 = np.array(self.d2_km1_b0)
         self.d2_lp1_ccb0 = self.d2_lp1
         self.d2_lm1_ccb0 = self.d2_lm1
-        self.d2_ccb0 = np.array(self.d2_b0)
-        self.d2_ccb0[0,:] = (-(rp[0,:]**2+2*rm[0,:]**2)/(r[0,:]**2*dr**2)
-                             - (sin(thp[0,:]) + sin(thm[0,:]))/(sin(th[0,:])*r[0,:]**2*dth**2)
-                             - (m/(r[0,:]*sin(th[0,:])))**2)
-        self.d2_v_ccb0 = rm[0,:]**2/(r[0,:]**2*dr**2)
+        self.d2_ccb0 = np.array(self.d2_b0, dtype=complex)
+        self.d2_km1_ccb0[0,:] = np.zeros(Nl)
+        self.d2_kp1_ccb0[0,:] = (rp[0,:]**2/(r[0,:]**2*dr**2) + rm[0,:]**2*(1+1j)/(r[0,:]**2*dr**2 * 2*delta_C))
+        self.d2_ccb0[0,:] = -( rp[0,:]**2/(r[0,:]**2*dr**2) + rm[0,:]**2 * 3*(1+1j)/(r[0,:]**2*dr*2*delta_C)
+                               + (sin(thp[0,:]) + sin(thm[0,:]))/(r[0,:]**2*sin(th[0,:])*dth**2)
+                               + m**2/(r[0,:]**2*sin(th[0,:])**2))
+        self.d2_v_ccb0 = np.array(3*rm[0,:]**2*Pm*Br[0,:]/(2*r[0,:]**2*dr*E), ndmin=2)
+        self.d2_v_kp1_ccb0 = np.array((-1*rm[0,:]**2*Pm*Br[0,:]/(2*r[0,:]**2*dr*E)), ndmin=2)
 
         #%% d2r
         self.d2r_thlp1  = - self.ddth_lp1/r
@@ -653,11 +658,8 @@ class GovEquation():
             Cb = C
         elif type(C) == np.ndarray:
             Cb = np.array(C[0,:], ndmin=2)
-        E = self.model.E
-        Pm = self.model.Pm
-        Br = np.array(self.model.Br[0,:], ndmin=2)
-        delta_C = self.model.delta_C
-        self.add_term(var, Cb*Br*Pm*delta_C/((1+1j)*E)*self.model.ddr_v_ccb0, k_vals=k_vals, l_vals=l_vals)
+        self.add_term(var, Cb*self.model.ddr_v_ccb0, k_vals=k_vals, l_vals=l_vals)
+        self.add_term(var, Cb*self.model.ddr_v_kp1_ccb0, kdiff=+1, k_vals=k_vals, l_vals=l_vals)
 
     def add_dth(self, var, C=1, k_vals=None, l_vals=None):
         self.add_term(var, C*self.model.ddth_lp1, ldiff=+1, k_vals=k_vals, l_vals=l_vals)
@@ -721,17 +723,13 @@ class GovEquation():
         else:
             raise ValueError('d2_ccb0 should only be used for bth or bph terms')
 
-    def add_d2_v_ccb0(self, var, C=1., k_vals=None, l_vals=None):
+    def add_d2_v_ccb0(self, var, C=1., k_vals=[0], l_vals=None):
         if type(C) == (float or int):
             Cb = C
         elif type(C) == np.ndarray:
             Cb = np.array(C[0,:], ndmin=2)
-
-        E = self.model.E
-        Pm = self.model.Pm
-        Br = np.array(self.model.Br[0,:], ndmin=2)
-        delta_C = self.model.delta_C
-        self.add_term(var, Cb*2*Br*Pm*delta_C/((1+1j)*E)*self.model.d2_v_ccb0, k_vals=[0], l_vals=None)
+        self.add_term(var, Cb*self.model.d2_v_ccb0, k_vals=k_vals, l_vals=l_vals)
+        self.add_term(var, Cb*self.model.d2_v_kp1_ccb0, kdiff=+1, k_vals=k_vals, l_vals=l_vals)
 
     def add_d2r_th(self, var, C=1., k_vals=None, l_vals=None):
         """
