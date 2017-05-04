@@ -240,7 +240,7 @@ def plot_M(M,m):
     plt.grid()
     plt.savefig('./output/m={0}/M_matrix_m={0}.png'.format(m))
 
-def plot_full_solution(model,val,vec,dir_name='./',title='pcolormesh MAC Wave Plot', physical_units = False):
+def plot_full_solution(model,val,vec,dir_name='./',title='pcolormesh MAC Wave Plot', physical_units = False, save=True, close=True):
     plt.close('all')
     r = np.concatenate([model.rm[:,0], model.rp[-1:,0]],axis=0)*model.r_star/1e3
     th = np.concatenate([model.thm[0,:], model.thp[0,-1:]],axis=0)*180./np.pi
@@ -287,7 +287,10 @@ def plot_full_solution(model,val,vec,dir_name='./',title='pcolormesh MAC Wave Pl
         plt.colorbar(p, format='%.0e', cax=axes[ind*3+2], ticks=np.linspace(-var_max,var_max,4))
     fig.set_tight_layout(True)
     plt.subplots_adjust(top=0.95)
-    plt.savefig(dir_name+title+'.png')
+    if save:
+        plt.savefig(dir_name+title+'.png')
+    if close:
+        plt.close()
 
 def plot_full_solution_enhance_layer(model,val,vec,dir_name='./',title='pcolormesh MAC Wave Plot', physical_units = False, layer_min_ind=70, layer_max_ind=-1):
     plt.close('all')
@@ -338,7 +341,7 @@ def plot_full_solution_enhance_layer(model,val,vec,dir_name='./',title='pcolorme
     plt.subplots_adjust(top=0.95)
     plt.savefig(dir_name+title+'.png')
 
-def plot_fast_solution(model, vec, title='fast solution', dir_name='./'):
+def plot_fast_solution(model, vec, title='fast solution', dir_name='./', save=True, close=True):
     variables_to_plot = ['vth', 'vph', 'bth', 'bph', 'p', 'ur']
     r = np.concatenate([model.rm[:,0], model.rp[-1:,0]],axis=0)*model.r_star/1e3
     th = np.concatenate([model.thm[0,:], model.thp[0,-1:]],axis=0)*180./np.pi
@@ -361,8 +364,11 @@ def plot_fast_solution(model, vec, title='fast solution', dir_name='./'):
         p = ax.pcolormesh(thpl, rpl, z.T, cmap='RdBu', vmin=-zmax, vmax=zmax)
         ax.set_yticks([])
         ax.set_xticks([])
-    plt.savefig(dir_name+title+'.png')
-    plt.close()
+
+    if save:
+        plt.savefig(dir_name+title+'.png')
+    if close:
+        plt.close()
 
 def plot_vel_AGU(model,vec,dir_name='./',title='Velocity for AGU', physical_units = False):
     var2plt = ['vr','vth','vph','bth','bph']
