@@ -142,11 +142,11 @@ def misfit_region(model, vec, parameters):
 def misfit_symmetry(model, vec, parameters):
     var_out = model.get_variable(vec, parameters['var'])
     north_power = np.mean(np.abs(var_out[:, model.Nl//2:]))
-    sovth_power = np.mean(np.abs(var_out[:, :model.Nl//2]))
+    south_power = np.mean(np.abs(var_out[:, :model.Nl//2]))
     if parameters['target'] is 'symmetric':
-        return np.abs((north_power - sovth_power)/(north_power+sovth_power))
+        return np.abs((north_power - south_power)/(north_power+south_power))
     elif parameters['target'] is 'asymmetric':
-        return 1.-np.abs((north_power + sovth_power) / (north_power + sovth_power))
+        return 1.-np.abs((north_power + south_power) / (north_power + south_power))
 
 def misfit_smoothness_r(model, vec, parameters):
     y = (model.get_variable(vec, parameters['var'])).real

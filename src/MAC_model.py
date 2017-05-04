@@ -28,6 +28,9 @@ class Model(FVF_model_base.Model):
         Br = self.Br
         Bth = self.Bth
         Bph = self.Bph
+        delta_C = self.delta_C
+        simple_mag_bc_bd2 = np.array(-2*Br[0,:]*E*(1+1j)/(Pm*delta_C), ndmin=2)
+        simple_mag_bc_bdr = np.array(-Br[0,:]*E*(1+1j)/(Pm*delta_C), ndmin=2)
         '''
         Creates the A matrix (M*l*x = A*x)
         m: azimuthal fourier mode to compute
@@ -40,17 +43,9 @@ class Model(FVF_model_base.Model):
         self.add_gov_equation('rmom', 'vr')
         self.rmom.add_drP('p', C= -1)
         self.rmom.add_term('ur', -N**2)
-        # self.rmom.add_term('vph', 2.0*sin(th))
         self.rmom.add_d2_b0('vr', C= E)
         self.rmom.add_d2r_th('vth', C= E)
         self.rmom.add_d2r_ph('vph', C= E)
-        # self.rmom.add_dr_b0('br', C= E/Pm*Br)
-        # self.rmom.add_dr_ccb0('bth', C= -E/Pm*Bth)
-        # self.rmom.add_dr_ccb0('bph', C= -E/Pm*Bph)
-        # self.rmom.add_dth('br', C= E/Pm*Bth)
-        # self.rmom.add_dth('bth', C= E/Pm*Br)
-        # self.rmom.add_dph('bph', C= E/Pm*Br)
-        # self.rmom.add_dph('br', C= E/Pm*Bph)
         self.A_rows = self.rmom.rows
         self.A_cols = self.rmom.cols
         self.A_vals = self.rmom.vals
@@ -63,13 +58,9 @@ class Model(FVF_model_base.Model):
         self.tmom.add_d2_bd0('vth', C= E)
         self.tmom.add_d2th_r('vr', C= E)
         self.tmom.add_d2th_ph('vph', C= E)
-        self.tmom.add_dr_ccb0('bth', C= Br*E/Pm)
-        # self.tmom.add_dr_bd0('br', C= -E/Pm*Bth)
-        # self.tmom.add_dth('bth', C= E/Pm*Bth)
+        self.tmom.add_dr_b0('bth', C= Br*E/Pm, k_vals=range(1,Nk))
+        self.tmom.add_term('bth', simple_mag_bc_bdr, k_vals=[0])
         self.tmom.add_dth('br', C= -Br*E/Pm)
-        # self.tmom.add_dth('bph', C= -E/Pm*Bph)
-        # self.tmom.add_dph('bph', C= E/Pm*Bth)
-        # self.tmom.add_dph('bth', C= E/Pm*Bph)
         self.A_rows += self.tmom.rows
         self.A_cols += self.tmom.cols
         self.A_vals += self.tmom.vals
@@ -79,17 +70,12 @@ class Model(FVF_model_base.Model):
         self.add_gov_equation('pmom', 'vph')
         self.pmom.add_dphP('p', C= -1)
         self.pmom.add_term('vth', -2.0*cos(th))
-        # self.pmom.add_term('vr', 2.0*sin(th))
         self.pmom.add_d2_bd0('vph', C= E)
         self.pmom.add_d2ph_r('vr', C= E)
         self.pmom.add_d2ph_th('vth', C= E)
-        self.pmom.add_dr_ccb0('bph', C= Br*E/Pm)
-        # self.pmom.add_dr_bd0('br', C= -E/Pm*Bph)
-        # self.pmom.add_dth('bph', C= E/Pm*Bth)
-        # self.pmom.add_dth('bth', C= E/Pm*Bph)
-        # self.pmom.add_dph('bph', C= E/Pm*Bph)
+        self.pmom.add_dr_b0('bph', C= Br*E/Pm, k_vals=range(1,Nk))
+        self.pmom.add_term('bph', simple_mag_bc_bdr, k_vals=[0])
         self.pmom.add_dph('br', C= -Br*E/Pm)
-        # self.pmom.add_dph('bth', C= -E/Pm*Bth)
         self.A_rows += self.pmom.rows
         self.A_cols += self.pmom.cols
         self.A_vals += self.pmom.vals
@@ -111,13 +97,12 @@ class Model(FVF_model_base.Model):
 
         # theta-Lorentz
         self.add_gov_equation('thlorentz', 'bth')
-        self.thlorentz.add_dr_bd0('vth', C= Br)
-        # self.thlorentz.add_dr_b0('vr', C= -Bth)
-        # self.thlorentz.add_dph('vth', C= Bph)
-        # self.thlorentz.add_dph('vph', C= -Bth)
-        self.thlorentz.add_d2_ccb0('bth', C= E/Pm)
-        self.thlorentz.add_d2th_r('br', C= E/Pm)
-        self.thlorentz.add_d2th_ph('bph', C= E/Pm)
+        self.thlorentz.add_dr_bd0('vth', C= Br, k_vals=range(1,Nk))
+        self.thlorentz.add_d2('bth', C= E/Pm, k_vals=range(1,Nk))
+        self.thlorentz.add_d2th_r('br', C= E/Pm, k_vals=range(1,Nk))
+        self.thlorentz.add_d2th_ph('bph', C= E/Pm, k_vals=range(1,Nk))
+        self.thlorentz.add_term('vth', np.ones((1,Nl)), k_vals=[0])
+        self.thlorentz.add_term('bth', simple_mag_bc_bd2, k_vals=[0])
         self.A_rows += self.thlorentz.rows
         self.A_cols += self.thlorentz.cols
         self.A_vals += self.thlorentz.vals
@@ -125,13 +110,12 @@ class Model(FVF_model_base.Model):
 
         # phi-Lorentz
         self.add_gov_equation('phlorentz', 'bph')
-        self.phlorentz.add_dr_bd0('vph', C= Br)
-        # self.phlorentz.add_dr_b0('vr', C= -Bph)
-        # self.phlorentz.add_dth('vph', C= Bth)
-        # self.phlorentz.add_dth('vth', C= -Bph)
-        self.phlorentz.add_d2_ccb0('bph', C= E/Pm)
-        self.phlorentz.add_d2ph_r('br', C= E/Pm)
-        self.phlorentz.add_d2ph_th('bth', C= E/Pm)
+        self.phlorentz.add_dr_bd0('vph', C= Br, k_vals=range(1,Nk))
+        self.phlorentz.add_d2('bph', C= E/Pm, k_vals=range(1,Nk))
+        self.phlorentz.add_d2ph_r('br', C= E/Pm, k_vals=range(1,Nk))
+        self.phlorentz.add_d2ph_th('bth', C= E/Pm, k_vals=range(1,Nk))
+        self.phlorentz.add_term('vph', np.ones((1,Nl)), k_vals=[0])
+        self.phlorentz.add_term('bph', simple_mag_bc_bd2, k_vals=[0])
         self.A_rows += self.phlorentz.rows
         self.A_cols += self.phlorentz.cols
         self.A_vals += self.phlorentz.vals
@@ -185,14 +169,14 @@ class Model(FVF_model_base.Model):
         del self.B_vph
 
         self.add_gov_equation('B_thlorentz', 'bth')
-        self.B_thlorentz.add_term('bth', ones)
+        self.B_thlorentz.add_term('bth', ones, k_vals=range(1,self.Nk))
         self.B_rows += self.B_thlorentz.rows
         self.B_cols += self.B_thlorentz.cols
         self.B_vals += self.B_thlorentz.vals
         del self.B_thlorentz
 
         self.add_gov_equation('B_phlorentz', 'bph')
-        self.B_phlorentz.add_term('bph', ones)
+        self.B_phlorentz.add_term('bph', ones, k_vals=range(1,self.Nk))
         self.B_rows += self.B_phlorentz.rows
         self.B_cols += self.B_phlorentz.cols
         self.B_vals += self.B_phlorentz.vals
