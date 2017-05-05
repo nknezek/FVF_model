@@ -35,8 +35,8 @@ num_threads = None
 
 # location of pre-computed data matrices
 data_dir = [
-    '../data/m0_140km_constant1.00N_constant0.62mTBr_41k_150l/',
-    '../data/m6_140km_constant1.00N_constant0.62mTBr_41k_150l/',
+    '../data/m0_140km_constant1.00N_constant0.62mTBr_42k_150l/',
+    '../data/m6_140km_constant1.00N_constant0.62mTBr_42k_150l/',
 ]
 
 # file names
