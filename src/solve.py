@@ -191,7 +191,7 @@ def solve_for_combo(c):
 
         for ind in range(cfg.num_solutions_to_plot):
             val = svals[ind]
-            vec = fana.shift_vec_real(model, svecs[ind], var='uth')
+            vec = fana.shift_vec_real(model, svecs[ind], var='vth')
             vec = fana.normalize_vec(vec, 10)
             Period = fana.get_period(model, val)
             Q = fana.get_Q(model, val)
