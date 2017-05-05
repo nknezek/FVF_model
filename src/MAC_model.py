@@ -60,7 +60,7 @@ class Model(FVF_model_base.Model):
         self.tmom.add_d2th_ph('vph', C= E)
         self.tmom.add_dr_b0('bth', C= Br*E/Pm, k_vals=range(1,Nk))
         self.tmom.add_term('bth', simple_mag_bc_bdr, k_vals=[0])
-        self.tmom.add_dth('br', C= -Br*E/Pm)
+        self.tmom.add_dth('br', C= -Br*E/Pm, k_vals=range(1,Nk))
         self.A_rows += self.tmom.rows
         self.A_cols += self.tmom.cols
         self.A_vals += self.tmom.vals
@@ -75,7 +75,7 @@ class Model(FVF_model_base.Model):
         self.pmom.add_d2ph_th('vth', C= E)
         self.pmom.add_dr_b0('bph', C= Br*E/Pm, k_vals=range(1,Nk))
         self.pmom.add_term('bph', simple_mag_bc_bdr, k_vals=[0])
-        self.pmom.add_dph('br', C= -Br*E/Pm)
+        self.pmom.add_dph('br', C= -Br*E/Pm, k_vals=range(1,Nk))
         self.A_rows += self.pmom.rows
         self.A_cols += self.pmom.cols
         self.A_vals += self.pmom.vals
