@@ -8,7 +8,7 @@ model_type = "MAC_model"
 m = [0,6]
 
 # Size of grid
-Nk = 41 # Radial cells
+Nk = 42 # Radial cells
 Nl = 150 # Latitudinal cells
 
 # Define Physical Constants

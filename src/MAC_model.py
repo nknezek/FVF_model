@@ -29,8 +29,7 @@ class Model(FVF_model_base.Model):
         Bth = self.Bth
         Bph = self.Bph
         delta_C = self.delta_C
-        simple_mag_bc_bd2 = np.array(-2*Br[0,:]*E*(1+1j)/(Pm*delta_C), ndmin=2)
-        simple_mag_bc_bdr = np.array(-Br[0,:]*E*(1+1j)/(Pm*delta_C), ndmin=2)
+        simple_mag_bc_bd2 = np.array(-2*E*(1+1j)/(Br[0,:]*Pm*delta_C), ndmin=2)
         '''
         Creates the A matrix (M*l*x = A*x)
         m: azimuthal fourier mode to compute
@@ -53,14 +52,15 @@ class Model(FVF_model_base.Model):
 
         # Theta-Momentum
         self.add_gov_equation('tmom', 'vth')
-        self.tmom.add_dthP('p', C= -1)
-        self.tmom.add_term('vph', 2.0*cos(th))
-        self.tmom.add_d2_bd0('vth', C= E)
-        self.tmom.add_d2th_r('vr', C= E)
-        self.tmom.add_d2th_ph('vph', C= E)
+        self.tmom.add_dthP('p', C= -1, k_vals=range(1,Nk))
+        self.tmom.add_term('vph', 2.0*cos(th), k_vals=range(1,Nk))
+        self.tmom.add_d2_bd0('vth', C= E, k_vals=range(1,Nk))
+        self.tmom.add_d2th_r('vr', C= E, k_vals=range(1,Nk))
+        self.tmom.add_d2th_ph('vph', C= E, k_vals=range(1,Nk))
         self.tmom.add_dr_b0('bth', C= Br*E/Pm, k_vals=range(1,Nk))
-        self.tmom.add_term('bth', simple_mag_bc_bdr, k_vals=[0])
         self.tmom.add_dth('br', C= -Br*E/Pm, k_vals=range(1,Nk))
+        self.tmom.add_term('vth', np.ones((1,Nl)), kdiff=1, k_vals=[0])
+        self.tmom.add_term('vth', -np.ones((1, Nl)), kdiff=0, k_vals=[0])
         self.A_rows += self.tmom.rows
         self.A_cols += self.tmom.cols
         self.A_vals += self.tmom.vals
@@ -68,14 +68,15 @@ class Model(FVF_model_base.Model):
 
         # Phi-Momentum
         self.add_gov_equation('pmom', 'vph')
-        self.pmom.add_dphP('p', C= -1)
-        self.pmom.add_term('vth', -2.0*cos(th))
-        self.pmom.add_d2_bd0('vph', C= E)
-        self.pmom.add_d2ph_r('vr', C= E)
-        self.pmom.add_d2ph_th('vth', C= E)
+        self.pmom.add_dphP('p', C= -1, k_vals=range(1,Nk))
+        self.pmom.add_term('vth', -2.0*cos(th), k_vals=range(1,Nk))
+        self.pmom.add_d2_bd0('vph', C= E, k_vals=range(1,Nk))
+        self.pmom.add_d2ph_r('vr', C= E, k_vals=range(1,Nk))
+        self.pmom.add_d2ph_th('vth', C= E, k_vals=range(1,Nk))
         self.pmom.add_dr_b0('bph', C= Br*E/Pm, k_vals=range(1,Nk))
-        self.pmom.add_term('bph', simple_mag_bc_bdr, k_vals=[0])
         self.pmom.add_dph('br', C= -Br*E/Pm, k_vals=range(1,Nk))
+        self.pmom.add_term('vph', np.ones((1,Nl)), kdiff=1, k_vals=[0])
+        self.pmom.add_term('vph', -np.ones((1, Nl)), kdiff=0, k_vals=[0])
         self.A_rows += self.pmom.rows
         self.A_cols += self.pmom.cols
         self.A_vals += self.pmom.vals
@@ -149,34 +150,36 @@ class Model(FVF_model_base.Model):
         Creates the B matrix (B*l*x = A*x)
         m: azimuthal fourier mode to compute
         '''
-        ones = np.ones((self.Nk, self.Nl))
+        Nk = self.Nk
+        Nl = self.Nl
+        ones = np.ones((Nk, Nl))
         self.B_rows = []
         self.B_cols = []
         self.B_vals = []
 
         self.add_gov_equation('B_vth', 'vth')
-        self.B_vth.add_term('vth', ones)
+        self.B_vth.add_term('vth', ones, k_vals=range(1,Nk))
         self.B_rows = self.B_vth.rows
         self.B_cols = self.B_vth.cols
         self.B_vals = self.B_vth.vals
         del self.B_vth
 
         self.add_gov_equation('B_vph', 'vph')
-        self.B_vph.add_term('vph', ones)
+        self.B_vph.add_term('vph', ones, k_vals=range(1,Nk))
         self.B_rows += self.B_vph.rows
         self.B_cols += self.B_vph.cols
         self.B_vals += self.B_vph.vals
         del self.B_vph
 
         self.add_gov_equation('B_thlorentz', 'bth')
-        self.B_thlorentz.add_term('bth', ones, k_vals=range(1,self.Nk))
+        self.B_thlorentz.add_term('bth', ones, k_vals=range(1,Nk))
         self.B_rows += self.B_thlorentz.rows
         self.B_cols += self.B_thlorentz.cols
         self.B_vals += self.B_thlorentz.vals
         del self.B_thlorentz
 
         self.add_gov_equation('B_phlorentz', 'bph')
-        self.B_phlorentz.add_term('bph', ones, k_vals=range(1,self.Nk))
+        self.B_phlorentz.add_term('bph', ones, k_vals=range(1,Nk))
         self.B_rows += self.B_phlorentz.rows
         self.B_cols += self.B_phlorentz.cols
         self.B_vals += self.B_phlorentz.vals
