@@ -29,7 +29,8 @@ class Model(FVF_model_base.Model):
         Bth = self.Bth
         Bph = self.Bph
         delta_C = self.delta_C
-        simple_mag_bc_bd2 = np.array(-2*E*(1+1j)/(Br[0,:]*Pm*delta_C), ndmin=2)
+        # simple_mag_bc_bd2 = np.array(-2*E*(1+1j)/(Br[0,:]*Pm*delta_C), ndmin=2)
+        coeff_bc_v = np.array(delta_C*Br[0,:]*Pm/(2*(1+1j)*E),ndmin=2)
         '''
         Creates the A matrix (M*l*x = A*x)
         m: azimuthal fourier mode to compute
@@ -88,9 +89,11 @@ class Model(FVF_model_base.Model):
 
         # B-divergence replaces r-lorentz
         self.add_gov_equation('bdiv', 'br')
-        self.bdiv.add_dr_bd0('br')
-        self.bdiv.add_dth('bth')
-        self.bdiv.add_dph('bph')
+        self.bdiv.add_dr_bd0('br', k_vals=range(1,Nk))
+        self.bdiv.add_dth('bth', k_vals=range(1,Nk))
+        self.bdiv.add_dph('bph', k_vals=range(1,Nk))
+        self.bdiv.add_dth('vth', C=-Br, k_vals=[0])
+        self.bdiv.add_dph('vph', C=-Br, k_vals=[0])
         self.A_rows += self.bdiv.rows
         self.A_cols += self.bdiv.cols
         self.A_vals += self.bdiv.vals
@@ -102,8 +105,8 @@ class Model(FVF_model_base.Model):
         self.thlorentz.add_d2('bth', C= E/Pm, k_vals=range(1,Nk))
         self.thlorentz.add_d2th_r('br', C= E/Pm, k_vals=range(1,Nk))
         self.thlorentz.add_d2th_ph('bph', C= E/Pm, k_vals=range(1,Nk))
-        self.thlorentz.add_term('vth', np.ones((1,Nl)), k_vals=[0])
-        self.thlorentz.add_term('bth', simple_mag_bc_bd2, k_vals=[0])
+        self.thlorentz.add_term('vth', -coeff_bc_v, k_vals=[0])
+        self.thlorentz.add_term('bth', np.ones((1,Nl)), k_vals=[0])
         self.A_rows += self.thlorentz.rows
         self.A_cols += self.thlorentz.cols
         self.A_vals += self.thlorentz.vals
@@ -115,8 +118,8 @@ class Model(FVF_model_base.Model):
         self.phlorentz.add_d2('bph', C= E/Pm, k_vals=range(1,Nk))
         self.phlorentz.add_d2ph_r('br', C= E/Pm, k_vals=range(1,Nk))
         self.phlorentz.add_d2ph_th('bth', C= E/Pm, k_vals=range(1,Nk))
-        self.phlorentz.add_term('vph', np.ones((1,Nl)), k_vals=[0])
-        self.phlorentz.add_term('bph', simple_mag_bc_bd2, k_vals=[0])
+        self.phlorentz.add_term('vph', -coeff_bc_v, k_vals=[0])
+        self.phlorentz.add_term('bph', np.ones((1,Nl)), k_vals=[0])
         self.A_rows += self.phlorentz.rows
         self.A_cols += self.phlorentz.cols
         self.A_vals += self.phlorentz.vals
@@ -170,6 +173,13 @@ class Model(FVF_model_base.Model):
         self.B_cols += self.B_vph.cols
         self.B_vals += self.B_vph.vals
         del self.B_vph
+
+        self.add_gov_equation('B_bdiv', 'br')
+        self.B_bdiv.add_term('br', ones, k_vals=[0])
+        self.B_rows += self.B_bdiv.rows
+        self.B_cols += self.B_bdiv.cols
+        self.B_vals += self.B_bdiv.vals
+        del self.B_bdiv
 
         self.add_gov_equation('B_thlorentz', 'bth')
         self.B_thlorentz.add_term('bth', ones, k_vals=range(1,Nk))
