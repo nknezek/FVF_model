@@ -41,11 +41,12 @@ class Model(FVF_model_base.Model):
         ################################
         # R-momentum
         self.add_gov_equation('rmom', 'vr')
-        self.rmom.add_drP('p', C= -1)
-        self.rmom.add_term('ur', -N**2)
-        self.rmom.add_d2_b0('vr', C= E)
-        self.rmom.add_d2r_th('vth', C= E)
-        self.rmom.add_d2r_ph('vph', C= E)
+        self.rmom.add_drP('p', C= -1, k_vals=range(1,Nk))
+        self.rmom.add_term('ur', -N**2, k_vals=range(1,Nk))
+        self.rmom.add_d2_b0('vr', C= E, k_vals=range(1,Nk))
+        self.rmom.add_d2r_th('vth', C= E, k_vals=range(1,Nk))
+        self.rmom.add_d2r_ph('vph', C= E, k_vals=range(1,Nk))
+        self.rmom.add_term('vr', np.ones((1,Nl)), k_vals=[0])
         self.A_rows = self.rmom.rows
         self.A_cols = self.rmom.cols
         self.A_vals = self.rmom.vals
@@ -126,18 +127,24 @@ class Model(FVF_model_base.Model):
         del self.phlorentz
 
         # Divergence (Mass Conservation) #########
-        self.add_gov_equation('div', 'p')
-        self.div.add_dr_b0('vr')
-        self.div.add_dth('vth')
-        self.div.add_dph('vph')
-        self.A_rows += self.div.rows
-        self.A_cols += self.div.cols
-        self.A_vals += self.div.vals
-        del self.div
+        self.add_gov_equation('vdiv', 'p')
+        self.vdiv.add_dr_b0('vr', k_vals=range(1,Nk))
+        self.vdiv.add_dth('vth', k_vals=range(1,Nk))
+        self.vdiv.add_dph('vph', k_vals=range(1,Nk))
+        self.vdiv.add_term('p', np.array(1/self.r[0,:],ndmin=2), kdiff=1, k_vals=[0])
+        self.vdiv.add_term('p', np.array(-np.sin(self.thp[0,:])/(4*self.r[0,:]*np.sin(self.th[0,:])),ndmin=2), kdiff=0, ldiff=1, k_vals=[0])
+        self.vdiv.add_term('p', np.array(-np.sin(self.thm[0,:])/(4*self.r[0,:]*np.sin(self.th[0,:])),ndmin=2), kdiff=0, ldiff=-1, k_vals=[0])
+        self.vdiv.add_term('p', np.array(-(np.sin(self.thp[0,:])+np.sin(self.thm[0,:]))/(4*self.r[0,:]*np.sin(self.th[0,:])),ndmin=2), kdiff=0, ldiff=0, k_vals=[0])
+
+        self.A_rows += self.vdiv.rows
+        self.A_cols += self.vdiv.cols
+        self.A_vals += self.vdiv.vals
+        del self.vdiv
 
         # Displacement Equation #########
         self.add_gov_equation('ur', 'ur')
-        self.ur.add_term('vr', np.ones((Nk,Nl)))
+        self.ur.add_term('vr', np.ones((Nk,Nl)), k_vals=range(1,Nk))
+        self.ur.add_term('ur', np.ones((1,Nl)), k_vals=[0])
         self.A_rows += self.ur.rows
         self.A_cols += self.ur.cols
         self.A_vals += self.ur.vals
@@ -175,7 +182,7 @@ class Model(FVF_model_base.Model):
         del self.B_vph
 
         self.add_gov_equation('B_bdiv', 'br')
-        self.B_bdiv.add_term('br', ones, k_vals=[0])
+        self.B_bdiv.add_term('br', np.ones((1,Nl)), k_vals=[0])
         self.B_rows += self.B_bdiv.rows
         self.B_cols += self.B_bdiv.cols
         self.B_vals += self.B_bdiv.vals
@@ -196,7 +203,7 @@ class Model(FVF_model_base.Model):
         del self.B_phlorentz
 
         self.add_gov_equation('B_ur', 'ur')
-        self.B_ur.add_term('ur', ones)
+        self.B_ur.add_term('ur', ones, k_vals=range(1,Nk))
         self.B_rows += self.B_ur.rows
         self.B_cols += self.B_ur.cols
         self.B_vals += self.B_ur.vals
