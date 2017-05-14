@@ -194,9 +194,9 @@ def solve_for_combo(c):
             vec = fana.shift_vec_real(model, svecs[ind], var='vth')
             vec = fana.normalize_vec(vec, 10)
             Period = fana.get_period(model, val)
-            Q = fana.get_Q(model, val)
-            r_ord = fana.get_r_zero_crossings(model, vec, var=cfg.r_ord_var)
-            th_ord = fana.get_theta_zero_crossings(model, vec, var=cfg.th_ord_var)
+            Q = fana.get_Q(val)
+            r_ord = fana.get_order_r(model, vec)
+            th_ord = fana.get_order_th(model, vec)
             if abs(Period) < 1.0:
                 title = ('{0:03d} m={5}, l={4}, k={3}, T={1:.2f}dys, Q={2:.2f}'.format(ind, Period*365.25, Q, r_ord, th_ord, model.m))
             else:

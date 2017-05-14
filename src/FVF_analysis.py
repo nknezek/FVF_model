@@ -234,7 +234,7 @@ def get_order_th(model, vec, var='vth', cutoff=0.075):
     zeros = np.where(stripped_signs[1:] != stripped_signs[:-1])[0]
     return len(zeros)
 
-def get_order_r(model, vec, var='vph', cutoff=0.075):
+def get_order_r(model, vec, var='vth', cutoff=0.075):
     z = model.get_variable(vec, var)
     ind = np.argmax(np.mean(np.abs(z),axis=0))
     zi = z[1:-1,ind]
