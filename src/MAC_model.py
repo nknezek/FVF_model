@@ -29,8 +29,7 @@ class Model(FVF_model_base.Model):
         Bth = self.Bth
         Bph = self.Bph
         delta_C = self.delta_C
-        simple_mag_bc_bd2 = np.array(-2*Br[0,:]*E*(1+1j)/(Pm*delta_C), ndmin=2)
-        simple_mag_bc_bdr = np.array(-Br[0,:]*E*(1+1j)/(Pm*delta_C), ndmin=2)
+        mag_BC_bterm = np.array(-2*E*(1+1j)/(Br[0,:]*Pm*delta_C), ndmin=2)
         ones = np.ones((Nk,Nl))
         '''
         Creates the A matrix (M*l*x = A*x)
@@ -113,7 +112,7 @@ class Model(FVF_model_base.Model):
         # self.thlorentz.add_d2th_r('br', C= E/Pm, k_vals=range(1,Nk-1))
         self.thlorentz.add_d2th_ph('bph', C= E/Pm, k_vals=range(1,Nk-1))
         self.thlorentz.add_term('vth', ones, k_vals=[0])
-        self.thlorentz.add_term('bth', simple_mag_bc_bd2, k_vals=[0])
+        self.thlorentz.add_term('bth', mag_BC_bterm, k_vals=[0])
         self.thlorentz.add_term('bth', ones, k_vals=[Nk-1])
         self.A_rows += self.thlorentz.rows
         self.A_cols += self.thlorentz.cols
@@ -127,7 +126,7 @@ class Model(FVF_model_base.Model):
         # self.phlorentz.add_d2ph_r('br', C= E/Pm, k_vals=range(1,Nk-1))
         self.phlorentz.add_d2ph_th('bth', C= E/Pm, k_vals=range(1,Nk-1))
         self.phlorentz.add_term('vph', ones, k_vals=[0])
-        self.phlorentz.add_term('bph', simple_mag_bc_bd2, k_vals=[0])
+        self.phlorentz.add_term('bph', mag_BC_bterm, k_vals=[0])
         self.phlorentz.add_term('bph', ones, k_vals=[Nk-1])
         self.A_rows += self.phlorentz.rows
         self.A_cols += self.phlorentz.cols
