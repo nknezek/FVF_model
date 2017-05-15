@@ -62,12 +62,11 @@ class Model(FVF_model_base.Model):
         self.tmom.add_d2th_r('vr', C= E, k_vals=range(1,Nk-1))
         self.tmom.add_d2th_ph('vph', C= E, k_vals=range(1,Nk-1))
         self.tmom.add_dr_b0('bth', C= Br*E/Pm, k_vals=range(1,Nk-1))
-        # self.tmom.add_term('bth', simple_mag_bc_bdr, k_vals=[0])
+        self.tmom.add_dth('br', C= -Br*E/Pm, k_vals=range(1,Nk-1))
         self.tmom.add_term('vth', ones, k_vals=[0])
         self.tmom.add_term('vth', -ones, kdiff=1, k_vals=[0])
         self.tmom.add_term('vth', ones, k_vals=[Nk-1])
         self.tmom.add_term('vth', -ones, kdiff=-1, k_vals=[Nk-1])
-        # self.tmom.add_dth('br', C= -Br*E/Pm, k_vals=range(1,Nk-1))
         self.A_rows += self.tmom.rows
         self.A_cols += self.tmom.cols
         self.A_vals += self.tmom.vals
@@ -81,12 +80,11 @@ class Model(FVF_model_base.Model):
         self.pmom.add_d2ph_r('vr', C= E, k_vals=range(1,Nk-1))
         self.pmom.add_d2ph_th('vth', C= E, k_vals=range(1,Nk-1))
         self.pmom.add_dr_b0('bph', C= Br*E/Pm, k_vals=range(1,Nk-1))
-        # self.pmom.add_term('bph', simple_mag_bc_bdr, k_vals=[0])
+        self.pmom.add_dph('br', C= -Br*E/Pm, k_vals=range(1,Nk-1))
         self.pmom.add_term('vph', ones, k_vals=[0])
         self.pmom.add_term('vph', -ones, kdiff=1, k_vals=[0])
         self.pmom.add_term('vph', ones, k_vals=[Nk-1])
         self.pmom.add_term('vph', -ones, kdiff=-1, k_vals=[Nk-1])
-        # self.pmom.add_dph('br', C= -Br*E/Pm, k_vals=range(1,Nk-1))
         self.A_rows += self.pmom.rows
         self.A_cols += self.pmom.cols
         self.A_vals += self.pmom.vals
@@ -96,21 +94,24 @@ class Model(FVF_model_base.Model):
         # Lorentz Equation ##########
         ################################
 
-        # # B-divergence replaces r-lorentz
-        # self.add_gov_equation('bdiv', 'br')
-        # self.bdiv.add_dr_bd0('br')
-        # self.bdiv.add_dth('bth')
-        # self.bdiv.add_dph('bph')
-        # self.A_rows += self.bdiv.rows
-        # self.A_cols += self.bdiv.cols
-        # self.A_vals += self.bdiv.vals
-        # del self.bdiv
+        # B-divergence replaces r-lorentz
+        self.add_gov_equation('bdiv', 'br')
+        self.bdiv.add_dr_bd0('br', k_vals=range(1,Nk-1))
+        self.bdiv.add_dth('bth', k_vals=range(1,Nk-1))
+        self.bdiv.add_dph('bph', k_vals=range(1,Nk-1))
+        self.bdiv.add_term('br',ones, k_vals=[0,Nk-1])
+        self.bdiv.add_term('br',-ones, kdiff=-1, k_vals=[Nk-1])
+        self.bdiv.add_term('br',-ones, kdiff=+1, k_vals=[0])
+        self.A_rows += self.bdiv.rows
+        self.A_cols += self.bdiv.cols
+        self.A_vals += self.bdiv.vals
+        del self.bdiv
 
         # theta-Lorentz
         self.add_gov_equation('thlorentz', 'bth')
         self.thlorentz.add_dr_bd0('vth', C= Br, k_vals=range(1,Nk-1))
         self.thlorentz.add_d2('bth', C= E/Pm, k_vals=range(1,Nk-1))
-        # self.thlorentz.add_d2th_r('br', C= E/Pm, k_vals=range(1,Nk-1))
+        self.thlorentz.add_d2th_r('br', C= E/Pm, k_vals=range(1,Nk-1))
         self.thlorentz.add_d2th_ph('bph', C= E/Pm, k_vals=range(1,Nk-1))
         self.thlorentz.add_term('vth', ones, k_vals=[0])
         self.thlorentz.add_term('bth', simple_mag_bc_bd2, k_vals=[0])
@@ -124,7 +125,7 @@ class Model(FVF_model_base.Model):
         self.add_gov_equation('phlorentz', 'bph')
         self.phlorentz.add_dr_bd0('vph', C= Br, k_vals=range(1,Nk-1))
         self.phlorentz.add_d2('bph', C= E/Pm, k_vals=range(1,Nk-1))
-        # self.phlorentz.add_d2ph_r('br', C= E/Pm, k_vals=range(1,Nk-1))
+        self.phlorentz.add_d2ph_r('br', C= E/Pm, k_vals=range(1,Nk-1))
         self.phlorentz.add_d2ph_th('bth', C= E/Pm, k_vals=range(1,Nk-1))
         self.phlorentz.add_term('vph', ones, k_vals=[0])
         self.phlorentz.add_term('bph', simple_mag_bc_bd2, k_vals=[0])
