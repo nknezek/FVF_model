@@ -29,7 +29,7 @@ class Model(FVF_model_base.Model):
         Bth = self.Bth
         Bph = self.Bph
         delta_C = self.delta_C
-        mag_BC_bterm = np.array(-2*E*(1+1j)/(Br[0,:]*Pm*delta_C), ndmin=2)
+        mag_BC_bterm = np.array(-E*(1+1j)/(Br[0,:]*Pm*delta_C), ndmin=2)
         ones = np.ones((Nk,Nl))
         '''
         Creates the A matrix (M*l*x = A*x)
