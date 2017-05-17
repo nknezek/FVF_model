@@ -38,7 +38,7 @@ dir_suf = cfg.dir_suf
 ep = cfg.ep
 
 # create list of all combinations of iteratable parameters
-iter_param_names = ['m', 'Nk', 'Nl', 'h', 'nu', 'eta', 'dCyr',
+iter_param_names = ['m', 'Nk', 'Nl', 'h', 'nu', 'eta', 'skin_depth_period',
                     'B_type', 'Bd', 'Br', 'Bth','Bph','Brconst', 'Brnoise','Brmult', 'Bthconst', 'Bthnoise', 'Bthmult','use_Bth',
                     'Vphi', 'buoyancy_type', 'N', 'model_type']
 iter_params = {}
@@ -76,7 +76,7 @@ def make_matrix(c):
     h = c['h']
     nu = c['nu']
     eta = c['eta']
-    dCyr = c['dCyr']
+    skin_depth_period = c['skin_depth_period']
     buoyancy_type = c['buoyancy_type']
     N = c['N']
     Vphi = c['Vphi']
@@ -98,10 +98,10 @@ def make_matrix(c):
     model.set_B_by_type(c['B_type'], Bd=c['Bd'], Br=c['Br'], Bth=c['Bth'], Bph=c['Bph'], use_Bth=c['use_Bth'],
                       Brconst=c['Brconst'], Brnoise=c['Brnoise'], Brmult=c['Brmult'], Bthconst=c['Bthconst'], Bthnoise=c['Bthnoise'], Bthmult=c['Bthmult'])
     model.set_buoyancy_by_type(buoyancy_type=buoyancy_type, N=N)
-    if type(dCyr) == (float or int):
-        model.set_CC_skin_depth(dCyr)
+    if type(skin_depth_period) == (float or int):
+        model.set_mag_skin_depth(skin_depth_period)
     else:
-        raise TypeError('dCyr not right type')
+        raise TypeError('skin_depth_period not right type')
     model.set_Vphi(Vphi)
     model.make_operators()
 
@@ -137,7 +137,7 @@ def make_matrix(c):
     'eta = ' + str(model.eta) + '\n' +
     'mu_0 = ' + str(model.mu_0) + '\n' +
     'g = ' + str(model.g) + '\n' +
-    'dCyr = ' + str(dCyr) + '\n' +
+    'skin_depth_period = ' + str(skin_depth_period) + '\n' +
     'B_Type = ' + str(c['B_type']) + '\n' +
     'Bd = ' + str(c['Bd']) + '\n' +
     'Br = ' + str(model.Br.max()) + ' to ' + str(model.Br.min()) + '\n' +
@@ -175,9 +175,9 @@ def make_matrix(c):
     if cfg.verbose:
         print('created A matrix')
     epA = np.min(np.abs(model.A.data[np.nonzero(model.A.data)]))*ep
-    model.save_mat_PETSc(dir_name+fileA+str(dCyr)+'.dat', model.A.toPETSc(epsilon=epA))
+    model.save_mat_PETSc(dir_name+fileA+str(skin_depth_period)+'.dat', model.A.toPETSc(epsilon=epA))
     if cfg.verbose:
-        print('saved PETSc A matrix for dCyr = {0} to '.format(dCyr) + str(dir_name))
+        print('saved PETSc A matrix for skin_depth_period = {0} to '.format(skin_depth_period) + str(dir_name))
     print('done with combination {0}/{1}'.format(c['iter_num'], c['total_iter']))
 
     return

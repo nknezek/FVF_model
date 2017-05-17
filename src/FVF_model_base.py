@@ -158,16 +158,19 @@ class Model():
         else:
             raise ValueError('B_type not valid')
 
-    def set_CC_skin_depth(self, period):
+    def set_mag_skin_depth(self, period):
         ''' sets the magnetic skin depth for conducting core BC
         inputs:
             period = period of oscillation in years
         returns:
-            delta_C = skin depth in (m)
+            delta_m_physical = magnetic skin depth in (m)
         '''
-        self.delta_C = np.sqrt(2*self.eta/(2*np.pi/(period*365.25*24*3600)))
-        self.physical_constants['delta_C'] = self.delta_C
-        return self.delta_C
+        omega_physical = 2*np.pi/(period*365.25*24*3600) # [/s]
+        omega = omega_physical*self.t_star # non-dimensional
+        self.delta_m = np.sqrt(2*self.E/(omega*self.Pm)) # non-dimensional
+        delta_m_physical = self.delta_m*self.r_star # [m]
+        self.physical_constants['delta_m_physical'] = delta_m_physical # [m]
+        return delta_m_physical
 
     def set_Vphi(self, Vphi):
         '''Sets the background velocity field in m/s'''
@@ -430,11 +433,11 @@ class Model():
         Nk = self.Nk
         Nl = self.Nl
         m = self.m
-        delta_C = self.delta_C/self.r_star
+        # delta_m = self.delta_m/self.r_star
         E = self.E
         Pm = self.Pm
         Br = self.Br
-
+        delta_m = self.delta_m
         # radial derivative arrays
         self.ddr_kp1 = rp**2/(2*r**2*dr)
         self.ddr_km1 = -rm**2/(2*r**2*dr)
