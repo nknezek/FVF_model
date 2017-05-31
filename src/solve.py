@@ -174,12 +174,13 @@ def solve_for_combo(c):
 
     except:
         logger.error("Problem Filtering Eigenvalues.", exc_info=1)
-
+        svals = vals
+        svecs = vecs
     # %% Save Filtered Eigenvectors
     #==============================================================================
     try:
         if savefile:
-            dill.dump({'vals': fvals, 'vecs': fvecs, 'model':model},open(out_dir + savefile, 'wb'))
+            dill.dump({'vals': svals, 'vecs': svecs, 'model':model},open(out_dir + savefile, 'wb'))
             logger.info('saved {0:d} vals and vecs saved to '.format(len(fvals)) + out_dir + savefile)
     except:
         logger.error("Problem Saving Filtered Eigenvalues.", exc_info=1)

@@ -10,10 +10,14 @@ def filter_results(model, vals, vecs, filter_dict):
 def filter_by_type(type_of_filter, parameters, model, vals, vecs):
     if type_of_filter is 'Q':
         return filter_by_Q(vals, vecs, parameters)
-    if type_of_filter is 'order_r':
+    elif type_of_filter is 'order_r':
         return filter_by_order_r(model, vals, vecs, parameters)
-    if type_of_filter is 'order_th':
+    elif type_of_filter is 'order_th':
         return filter_by_order_th(model, vals, vecs, parameters)
+    elif type_of_filter is 'T':
+        return filter_by_T(model, vals, vecs, parameters)
+    else:
+        return vals, vecs
 
 def filter_by_order_th(model, vals, vecs, parameters):
     filtered_vals = []
@@ -43,6 +47,23 @@ def filter_by_order_r(model, vals, vecs, parameters):
                 keep = False
         if 'minimum' in parameters.keys():
             if zc < parameters['minimum']:
+                keep = False
+        if keep:
+            filtered_vals.append(val)
+            filtered_vecs.append(vec)
+    return filtered_vals, filtered_vecs
+
+def filter_by_T(model, vals, vecs, parameters):
+    filtered_vals = []
+    filtered_vecs = []
+    for ind, (val, vec) in enumerate(zip(vals, vecs)):
+        T = get_period(model, val)
+        keep = True
+        if 'maximum' in parameters.keys():
+            if T > parameters['maximum']:
+                keep = False
+        if 'minimum' in parameters.keys():
+            if T < parameters['minimum']:
                 keep = False
         if keep:
             filtered_vals.append(val)

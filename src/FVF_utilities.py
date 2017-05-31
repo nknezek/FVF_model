@@ -41,6 +41,8 @@ def get_directory_name(param_dict):
     if (type(c['nu']) is list):
         if len(c['nu']) > 1:
             folder_name += '_{0:.0e}m2snu'.format(c['nu'])
+    elif c['nu'] !=1e-2:
+        folder_name += '_{0:.0e}m2snu'.format(c['nu'])
     if (type(c['eta']) is list):
         if len(c['eta']) > 1:
             folder_name += '_{0:.0e}m2seta'.format(c['eta'])
@@ -54,10 +56,7 @@ def get_out_dir(out_dir_base, data_dir, num_data_dirs, T, num_T):
         for subfolder in subfolders[:-2]:
             out_dir += subfolder+'/'
     if num_T > 1:
-        if np.abs(T) >= 1.:
-            out_dir +='{0:.2f}yrs/'.format(T)
-        else:
-            out_dir += '{0:.2f}days/'.format(T*365.25)
+        out_dir +='{0:03.0f}yrs{1:03.0f}days/'.format(T, (T%1)*365.25)
     return out_dir
 
 def ensure_dir(f):
