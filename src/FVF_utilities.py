@@ -9,7 +9,7 @@ import numpy as np
 def convert_model_freq_to_period_yrs(omega):
     return 2*np.pi/1j*omega
 
-def get_directory_name(param_dict):
+def get_directory_name(param_dict, dir_suf=None):
     c = param_dict
     folder_name = '../data/m{0:.0f}_{1:.0f}km_{2}'.format(c['m'], c['h'] * 1e-3, c['buoyancy_type'])
     if type(c['N']) is np.ndarray:
@@ -46,17 +46,25 @@ def get_directory_name(param_dict):
     if (type(c['eta']) is list):
         if len(c['eta']) > 1:
             folder_name += '_{0:.0e}m2seta'.format(c['eta'])
-    folder_name += '_{0}k_{1}l/'.format(c['Nk'], c['Nl'])
+    folder_name += '_{0}k_{1}l'.format(c['Nk'], c['Nl'])
+    if dir_suf:
+        folder_name += '_'
+        folder_name += dir_suf
+    folder_name += '/'
     return folder_name
 
 def get_out_dir(out_dir_base, data_dir, num_data_dirs, T, num_T):
     out_dir = out_dir_base
     if num_data_dirs > 1:
         subfolders = ((data_dir.split('/'))[2]).split('_')
-        for subfolder in subfolders[:-2]:
+        for subfolder in subfolders[:-3]:
             out_dir += subfolder+'/'
     if num_T > 1:
-        out_dir +='{0:03.0f}yrs{1:03.0f}days/'.format(T, (T%1)*365.25)
+        if T>0:
+            direction = 'w'
+        else:
+            direction = 'e'
+        out_dir +='{2}{0:03.0f}yrs{1:03.0f}days/'.format(np.abs(T)//1, (np.abs(T)%1)*365.25, direction)
     return out_dir
 
 def ensure_dir(f):

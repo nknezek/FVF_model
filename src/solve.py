@@ -9,7 +9,6 @@ import importlib
 import shutil
 import FVF_notify as fvn
 
-
 # Import configuration file
 default_config = "cfg_solve_general"
 sys.path.append('../config')
@@ -61,6 +60,8 @@ out_dir_base = '../output/{0}_{1}/'.format(datetime.today().strftime("%Y-%m-%d_%
 
 
 def solve_for_combo(c):
+    import time
+    time_start = -time.time()
     import FVF_loglib as flog
     import FVF_plotlib as fplt
     import FVF_analysis as fana
@@ -77,29 +78,39 @@ def solve_for_combo(c):
     T = c['T_list']
 
     # Set up directory to store solution data
-    out_dir = futil.get_out_dir(out_dir_base, data_dir, len(cfg.data_dir), T, len(cfg.T_list))
-    futil.ensure_dir(out_dir)
+    try:
+        out_dir = futil.get_out_dir(out_dir_base, data_dir, len(cfg.data_dir), T, len(cfg.T_list))
+        futil.ensure_dir(out_dir)
+    except:
+        print('problem setting out directory')
+        return
 
     # Set up logger
-    logger = flog.setup_custom_logger(dir_name=out_dir, filename='run.log', verbose=cfg.verbose)
+    try:
+        logger = flog.setup_custom_logger(dir_name=out_dir, filename='run.log', verbose=cfg.verbose)
+    except:
+        print('problem creating logger')
+        return
 
-    # Store config file for later reference
-    logger.info('used config file {0}.py'.format(config_file))
-    futil.store_config_file(config_file, out_dir_base)
+    try:
+        # Store config file for later reference
+        logger.info('used config file {0}.py'.format(config_file))
+        futil.store_config_file(config_file, out_dir_base)
 
-    logger.info('Main output directory set to {0}'.format(out_dir_base))
-    logger.info('Output subdirectory set to {0}'.format(out_dir))
+        logger.info('Main output directory set to {0}'.format(out_dir_base))
+        logger.info('Output subdirectory set to {0}'.format(out_dir))
 
-    # Convert Time in years to model frequency
-    t_star = (23.9345*3600)/(2*np.pi)
-    Target_j = 2*np.pi/(T*365.25*24*3600/t_star)*1j
-    Target = Target_j + Target_j*1j/(2*cfg.target_Q)
+        # Convert Time in years to model frequency
+        t_star = (23.9345*3600)/(2*np.pi)
+        Target_j = 2*np.pi/(T*365.25*24*3600/t_star)*1j
+        Target = Target_j + Target_j*1j/(2*cfg.target_Q)
 
-    # Find which CC matrix to use
-    dCyr_list = futil.find_available_skin_depths(data_dir)
-    dCyr_use = futil.find_closest_CC(T, dCyr_list)
-    logger.info('{0} dCyr used'.format(dCyr_use))
-
+        # Find which CC matrix to use
+        dCyr_list = futil.find_available_skin_depths(data_dir)
+        dCyr_use = futil.find_closest_CC(T, dCyr_list)
+        logger.info('{0} dCyr used'.format(dCyr_use))
+    except:
+        logger.error('problem storing config file or finding correct magnetic skin depth')
 
     # %% Load Matrices and model from files
     #==============================================================================
@@ -199,9 +210,11 @@ def solve_for_combo(c):
             r_ord = fana.get_order_r(model, vec)
             th_ord = fana.get_order_th(model, vec)
             if abs(Period) < 1.0:
-                title = ('{0:03d} m={5}, l={4}, k={3}, T={1:.2f}dys, Q={2:.2f}'.format(ind, Period*365.25, Q, r_ord, th_ord, model.m))
+                title = ('{0:03d} k={3}, l={4}, m={5}, T={1:.2f}dys, Q={2:.2f}'.format(ind, Period*365.25, Q, r_ord, th_ord, model.m)
+                         + '\nH={:.0f}km, B={:.2f}mT, N={:.2f} pvbc'.format(model.h/1e3, np.mean(model.Br)*model.B_star*1e3, np.mean(model.N)))
             else:
-                title = ('{0:03d} m={5}, l={4}, k={3}, T={1:.2f}yrs, Q={2:.2f}'.format(ind, Period, Q, r_ord, th_ord, model.m))
+                title = ('{0:03d} k={3}, l={4}, m={5}, T={1:.2f}yrs, Q={2:.2f}'.format(ind, Period, Q, r_ord, th_ord, model.m)
+                         + '\nH={:.0f}km, B={:.2f}mT, N={:.2f} pvbc'.format(model.h/1e3, np.mean(model.Br)*model.B_star*1e3, np.mean(model.N)))
             if (model.Nk > 1):
                 fplt.plot_fast_solution(model, vec, title=title, dir_name=out_dir)
             else:
@@ -213,7 +226,8 @@ def solve_for_combo(c):
         logger.info('run complete')
     except:
         logger.error("Problem Plotting Eigenvalues.", exc_info=1)
-    print('done with combination {0}/{1}'.format(c['iter_num'], c['total_iter']))
+    dtime = (time_start + time.time())/60.
+    print('done with combination {0}/{1} in {2:.2f}min'.format(c['iter_num'], c['total_iter'], dtime))
 
 if __name__ == '__main__':
     if cfg.num_threads is None:

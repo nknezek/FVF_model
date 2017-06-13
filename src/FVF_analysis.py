@@ -15,7 +15,11 @@ def filter_by_type(type_of_filter, parameters, model, vals, vecs):
     elif type_of_filter is 'order_th':
         return filter_by_order_th(model, vals, vecs, parameters)
     elif type_of_filter is 'T':
-        return filter_by_T(model, vals, vecs, parameters)
+        if 'neg_allowed' in parameters:
+            neg_allowed = parameters['neg_allowed']
+        else:
+            neg_allowed = False
+        return filter_by_T(model, vals, vecs, parameters, neg_allowed=neg_allowed)
     else:
         return vals, vecs
 
@@ -53,11 +57,14 @@ def filter_by_order_r(model, vals, vecs, parameters):
             filtered_vecs.append(vec)
     return filtered_vals, filtered_vecs
 
-def filter_by_T(model, vals, vecs, parameters):
+def filter_by_T(model, vals, vecs, parameters, neg_allowed=False):
     filtered_vals = []
     filtered_vecs = []
     for ind, (val, vec) in enumerate(zip(vals, vecs)):
-        T = get_period(model, val)
+        if neg_allowed:
+            T = np.abs(get_period(model, val))
+        else:
+            T = get_period(model, val)
         keep = True
         if 'maximum' in parameters.keys():
             if T > parameters['maximum']:
