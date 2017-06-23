@@ -29,7 +29,7 @@ class Model(FVF_model_base.Model):
         Bth = self.Bth
         Bph = self.Bph
         delta_m = self.delta_m
-        mag_BC_bterm = np.array(-E*(1-1j)/(Br[0,:]*Pm*delta_m), ndmin=2)
+        mag_BC_bterm = np.array(-2*E*(1+1j)/(Br[0,:]*Pm*delta_m), ndmin=2)
         ones = np.ones((Nk,Nl))
         '''
         Creates the A matrix (M*l*x = A*x)
@@ -46,7 +46,9 @@ class Model(FVF_model_base.Model):
         self.rmom.add_d2_b0('vr', C= E, k_vals=range(1,Nk-1))
         self.rmom.add_d2r_th('vth', C= E, k_vals=range(1,Nk-1))
         self.rmom.add_d2r_ph('vph', C= E, k_vals=range(1,Nk-1))
+        # simple free-slip BC at base
         self.rmom.add_term('vr', ones, k_vals=[0])
+        # simple free-slip BC at top
         self.rmom.add_term('vr', ones, k_vals=[Nk-1])
         self.A_rows = self.rmom.rows
         self.A_cols = self.rmom.cols
@@ -61,9 +63,10 @@ class Model(FVF_model_base.Model):
         self.tmom.add_d2th_r('vr', C= E, k_vals=range(1,Nk-1))
         self.tmom.add_d2th_ph('vph', C= E, k_vals=range(1,Nk-1))
         self.tmom.add_dr_b0('bth', C= Br*E/Pm, k_vals=range(1,Nk-1))
-        # self.tmom.add_term('bth', simple_mag_bc_bdr, k_vals=[0])
+        # simple free-slip BC at base
         self.tmom.add_term('vth', ones, k_vals=[0])
         self.tmom.add_term('vth', -ones, kdiff=1, k_vals=[0])
+        # simple free-slip BC at top
         self.tmom.add_term('vth', ones, k_vals=[Nk-1])
         self.tmom.add_term('vth', -ones, kdiff=-1, k_vals=[Nk-1])
         # self.tmom.add_dth('br', C= -Br*E/Pm, k_vals=range(1,Nk-1))
@@ -80,9 +83,10 @@ class Model(FVF_model_base.Model):
         self.pmom.add_d2ph_r('vr', C= E, k_vals=range(1,Nk-1))
         self.pmom.add_d2ph_th('vth', C= E, k_vals=range(1,Nk-1))
         self.pmom.add_dr_b0('bph', C= Br*E/Pm, k_vals=range(1,Nk-1))
-        # self.pmom.add_term('bph', simple_mag_bc_bdr, k_vals=[0])
+        # simple free-slip BC at base
         self.pmom.add_term('vph', ones, k_vals=[0])
         self.pmom.add_term('vph', -ones, kdiff=1, k_vals=[0])
+        # simple free-slip BC at base
         self.pmom.add_term('vph', ones, k_vals=[Nk-1])
         self.pmom.add_term('vph', -ones, kdiff=-1, k_vals=[Nk-1])
         # self.pmom.add_dph('br', C= -Br*E/Pm, k_vals=range(1,Nk-1))
@@ -111,8 +115,10 @@ class Model(FVF_model_base.Model):
         self.thlorentz.add_d2('bth', C= E/Pm, k_vals=range(1,Nk-1))
         # self.thlorentz.add_d2th_r('br', C= E/Pm, k_vals=range(1,Nk-1))
         self.thlorentz.add_d2th_ph('bph', C= E/Pm, k_vals=range(1,Nk-1))
+        # simple EMBC at base
         self.thlorentz.add_term('vth', ones, k_vals=[0])
         self.thlorentz.add_term('bth', mag_BC_bterm, k_vals=[0])
+        # simple PVBC at top
         self.thlorentz.add_term('bth', ones, k_vals=[Nk-1])
         self.A_rows += self.thlorentz.rows
         self.A_cols += self.thlorentz.cols
@@ -125,9 +131,12 @@ class Model(FVF_model_base.Model):
         self.phlorentz.add_d2('bph', C= E/Pm, k_vals=range(1,Nk-1))
         # self.phlorentz.add_d2ph_r('br', C= E/Pm, k_vals=range(1,Nk-1))
         self.phlorentz.add_d2ph_th('bth', C= E/Pm, k_vals=range(1,Nk-1))
+        # simple EMBC at base
         self.phlorentz.add_term('vph', ones, k_vals=[0])
         self.phlorentz.add_term('bph', mag_BC_bterm, k_vals=[0])
+        # simple PVBC at top
         self.phlorentz.add_term('bph', ones, k_vals=[Nk-1])
+
         self.A_rows += self.phlorentz.rows
         self.A_cols += self.phlorentz.cols
         self.A_vals += self.phlorentz.vals
@@ -138,8 +147,10 @@ class Model(FVF_model_base.Model):
         self.div.add_dr_b0('vr', k_vals=range(1,Nk-1))
         self.div.add_dth('vth', k_vals=range(1,Nk-1))
         self.div.add_dph('vph', k_vals=range(1,Nk-1))
+        # simple zero-gradient p at base
         self.div.add_term('p', ones, k_vals=[0])
         self.div.add_term('p', -ones, kdiff=1, k_vals=[0])
+        # simple zero-gradient p at top
         self.div.add_term('p', ones, k_vals=[Nk-1])
         self.div.add_term('p', -ones, kdiff=-1, k_vals=[Nk-1])
         self.A_rows += self.div.rows

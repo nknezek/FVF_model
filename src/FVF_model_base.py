@@ -433,7 +433,6 @@ class Model():
         Nk = self.Nk
         Nl = self.Nl
         m = self.m
-        # delta_m = self.delta_m/self.r_star
         E = self.E
         Pm = self.Pm
         Br = self.Br
