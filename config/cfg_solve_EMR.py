@@ -2,10 +2,10 @@
 import numpy as np
 """ Configuration File for SLEPc Run solving MAC model """
 
-T_list = [ -8, 8., -10,10, -50, 50., -500, 500.,]
+T_list = [ -8, 8., -10, 10, -50, 50., -500, 500.,]
 target_Q = 5.
 
-num_solutions_to_calculate = 300
+num_solutions_to_calculate = 200
 num_solutions_to_plot = 50
 
 # Parameters for deciding which solutions to keep or discard
@@ -35,8 +35,8 @@ num_threads = None
 
 # location of pre-computed data matrices
 data_dir = [
-    '../data/m0_140km_constant_1.00N_constant_0.62mTBr_30k_140l/',
-    '../data/m6_140km_constant_1.00N_constant_0.62mTBr_30k_140l/',
+    '../data/m0_140km_constant1.00N_constant0.62mTBr_41k_150l/',
+    '../data/m6_140km_constant1.00N_constant0.62mTBr_41k_150l/',
 ]
 
 # file names

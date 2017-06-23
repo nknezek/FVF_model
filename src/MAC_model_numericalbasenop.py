@@ -29,6 +29,9 @@ class Model(FVF_model_base.Model):
         Bth = self.Bth
         Bph = self.Bph
         ones = np.ones((Nk,Nl))
+        index_top_zero_N= np.max(np.where(N[:,0]==0.))
+        index_bottom_stratified = index_top_zero_N + 1
+
         '''
         Creates the A matrix (M*l*x = A*x)
         m: azimuthal fourier mode to compute
@@ -39,13 +42,19 @@ class Model(FVF_model_base.Model):
         ################################
         # R-momentum
         self.add_gov_equation('rmom', 'vr')
-        self.rmom.add_drP('p', C= -1, k_vals=range(1,Nk-1))
-        self.rmom.add_term('ur', -N**2, k_vals=range(1,Nk-1))
-        self.rmom.add_d2_b0('vr', C= E, k_vals=range(1,Nk-1))
-        self.rmom.add_d2r_th('vth', C= E, k_vals=range(1,Nk-1))
-        self.rmom.add_d2r_ph('vph', C= E, k_vals=range(1,Nk-1))
-        self.rmom.add_term('vr', ones, k_vals=[0])
-        self.rmom.add_term('vr', ones, k_vals=[Nk-1])
+        self.rmom.add_drP('p', C= -1, k_vals=range(index_bottom_stratified,Nk-1))
+        # self.rmom.add_drP('p', C=-1, k_vals=[1])
+        # self.rmom.add_drP('p', C=-1, k_vals=[1])
+        self.rmom.add_term('ur', -N**2, k_vals=range(index_bottom_stratified,Nk-1))
+        self.rmom.add_d2_b0('vr', C= E, k_vals=range(index_bottom_stratified,Nk-1))
+        self.rmom.add_d2r_th('vth', C= E, k_vals=range(index_bottom_stratified,Nk-1))
+        self.rmom.add_d2r_ph('vph', C= E, k_vals=range(index_bottom_stratified,Nk-1))
+        ### set pressure to zero within the non-stratified layer:
+        self.rmom.add_term('p', ones, k_vals=range(0,index_bottom_stratified))
+        # self.rmom.add_term('p', ones, kdiff=1, k_vals=[0])
+        self.rmom.add_term('p', ones, k_vals=[Nk-1])
+        self.rmom.add_term('p', -ones, kdiff=-1, k_vals=[Nk-1])
+
         self.A_rows = self.rmom.rows
         self.A_cols = self.rmom.cols
         self.A_vals = self.rmom.vals
@@ -61,7 +70,7 @@ class Model(FVF_model_base.Model):
         self.tmom.add_dr_b0('bth', C= Br*E/Pm, k_vals=range(1,Nk-1))
         # self.tmom.add_term('bth', simple_mag_bc_bdr, k_vals=[0])
         self.tmom.add_term('vth', ones, k_vals=[0])
-        self.tmom.add_term('vth', -ones, kdiff=1, k_vals=[0])
+        # self.tmom.add_term('vth', -ones, kdiff=1, k_vals=[0])
         self.tmom.add_term('vth', ones, k_vals=[Nk-1])
         self.tmom.add_term('vth', -ones, kdiff=-1, k_vals=[Nk-1])
         # self.tmom.add_dth('br', C= -Br*E/Pm, k_vals=range(1,Nk-1))
@@ -80,7 +89,7 @@ class Model(FVF_model_base.Model):
         self.pmom.add_dr_b0('bph', C= Br*E/Pm, k_vals=range(1,Nk-1))
         # self.pmom.add_term('bph', simple_mag_bc_bdr, k_vals=[0])
         self.pmom.add_term('vph', ones, k_vals=[0])
-        self.pmom.add_term('vph', -ones, kdiff=1, k_vals=[0])
+        # self.pmom.add_term('vph', -ones, kdiff=1, k_vals=[0])
         self.pmom.add_term('vph', ones, k_vals=[Nk-1])
         self.pmom.add_term('vph', -ones, kdiff=-1, k_vals=[Nk-1])
         # self.pmom.add_dph('br', C= -Br*E/Pm, k_vals=range(1,Nk-1))
@@ -134,10 +143,10 @@ class Model(FVF_model_base.Model):
         self.div.add_dr_b0('vr', k_vals=range(1,Nk-1))
         self.div.add_dth('vth', k_vals=range(1,Nk-1))
         self.div.add_dph('vph', k_vals=range(1,Nk-1))
-        self.div.add_term('p', ones, k_vals=[0])
-        self.div.add_term('p', -ones, kdiff=1, k_vals=[0])
-        self.div.add_term('p', ones, k_vals=[Nk-1])
-        self.div.add_term('p', -ones, kdiff=-1, k_vals=[Nk-1])
+
+        self.div.add_term('vr', ones, k_vals=[0])
+        self.div.add_term('vr', ones, k_vals=[Nk-1])
+
         self.A_rows += self.div.rows
         self.A_cols += self.div.cols
         self.A_vals += self.div.vals

@@ -240,7 +240,7 @@ def plot_M(M,m):
     plt.grid()
     plt.savefig('./output/m={0}/M_matrix_m={0}.png'.format(m))
 
-def plot_full_solution(model,val,vec,dir_name='./',title='pcolormesh MAC Wave Plot', physical_units = False, save=True, close=True):
+def plot_full_solution(model,val,vec,dir_name='./',title='pcolormesh MAC Wave Plot', physical_units = False, save=True, close=True, layer_boundary=None):
     plt.close('all')
     r = np.concatenate([model.rm[:,0], model.rp[-1:,0]],axis=0)*model.r_star/1e3
     th = np.concatenate([model.thm[0,:], model.thp[0,-1:]],axis=0)*180./np.pi
@@ -281,6 +281,9 @@ def plot_full_solution(model,val,vec,dir_name='./',title='pcolormesh MAC Wave Pl
         axes[ind*3].pcolormesh(thpl,rpl,var_data.real.T, cmap='RdBu',vmin=-var_max, vmax=var_max)
         axes[ind*3].set_ylabel('radius (km)')
         p = axes[ind*3+1].pcolormesh(thpl,rpl,var_data.imag.T, cmap='RdBu',vmin=-var_max, vmax=var_max)
+        if layer_boundary:
+            axes[ind*3].plot(th,np.ones_like(th)*layer_boundary,'--k')
+            axes[ind * 3+1].plot(th, np.ones_like(th) * layer_boundary, '--k')
         axes[ind*3].set_ylim(r[0], r[-1])
         axes[ind*3+1].set_ylim(r[0], r[-1])
         axes[ind*3+1].get_yaxis().set_ticks([])

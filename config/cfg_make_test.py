@@ -11,8 +11,8 @@ m = [0,6]
 h = [140e3]
 
 # Size of grid
-Nk = 10 # Radial cells
-Nl = 20 # Latitudinal cells
+Nk = 3 # Radial cells
+Nl = 3 # Latitudinal cells
 
 # Buoyancy Frequency
 # choices: constant, linear, set

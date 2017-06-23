@@ -158,16 +158,19 @@ class Model():
         else:
             raise ValueError('B_type not valid')
 
-    def set_CC_skin_depth(self, period):
+    def set_mag_skin_depth(self, period):
         ''' sets the magnetic skin depth for conducting core BC
         inputs:
             period = period of oscillation in years
         returns:
-            delta_C = skin depth in (m)
+            delta_m_physical = magnetic skin depth in (m)
         '''
-        self.delta_C = np.sqrt(2*self.eta/(2*np.pi/(period*365.25*24*3600)))
-        self.physical_constants['delta_C'] = self.delta_C
-        return self.delta_C
+        omega_physical = 2*np.pi/(period*365.25*24*3600) # [/s]
+        omega = omega_physical*self.t_star # non-dimensional
+        self.delta_m = np.sqrt(2*self.E/(omega*self.Pm)) # non-dimensional
+        delta_m_physical = self.delta_m*self.r_star # [m]
+        self.physical_constants['delta_m_physical'] = delta_m_physical # [m]
+        return delta_m_physical
 
     def set_Vphi(self, Vphi):
         '''Sets the background velocity field in m/s'''
@@ -430,14 +433,19 @@ class Model():
         Nk = self.Nk
         Nl = self.Nl
         m = self.m
-        delta_C = self.delta_C/self.r_star
+        # delta_m = self.delta_m/self.r_star
         E = self.E
         Pm = self.Pm
+        Br = self.Br
+        delta_m = self.delta_m
 
         # radial derivative arrays
         self.ddr_kp1 = rp**2/(2*r**2*dr)
         self.ddr_km1 = -rm**2/(2*r**2*dr)
         self.ddr = 1/r
+
+        self.ddr_bd_km1 = -np.ones_like(r)/dr
+        self.ddr_bd = np.ones_like(r)/dr
 
         self.ddr_kp1_b0 = np.array(self.ddr_kp1)
         self.ddr_km1_b0 = np.array(self.ddr_km1)
@@ -454,14 +462,6 @@ class Model():
         self.ddr_bd0[-1,:] = (2*rp[-1,:]**2 -rm[-1,:]**2)/(2*r[-1,:]**2*dr)
         self.ddr_km1_bd0[0,:] = np.zeros(Nl)
         self.ddr_bd0[0,:] = (rp[0,:]**2 - 2*rm[0,:]**2)/(2*r[0,:]**2*dr)
-
-        # radial derivatives for Conducting core boundary conditions
-        self.ddr_kp1_ccb0 = np.array(self.ddr_kp1_b0)
-        self.ddr_km1_ccb0 = np.array(self.ddr_km1_b0)
-        self.ddr_km1_ccb0[0,:] = np.zeros(Nl)
-        self.ddr_ccb0 = np.array(self.ddr_b0)
-        self.ddr_ccb0[0,:] = rp[0,:]**2/(r[0,:]**2*2*dr)
-        self.ddr_v_ccb0 = -rm[0,:]**2/(r[0,:]**2*dr)
 
         # theta derivatives
         self.ddth_lp1 = sin(thp)/(2*r*sin(th)*dth)
@@ -483,6 +483,10 @@ class Model():
         self.drP_km1[0,:] = np.zeros(Nl)
         self.drP[0,:] = -rm[0,:]**2/(2*dr*r[0,:]**2) \
                         - (sin(thp[0,:]) + sin(thm[0,:]))/(4*r[0,:]*sin(th[0,:]))
+
+        # Pressure backwards difference radial derivative
+        self.drP_bd = np.ones_like(r)/dr
+        self.drP_bd_km1 = -np.ones_like(r)/dr
 
         # Pressure th derivative
         self.dthP_lp1 = sin(thp)/(2*r*sin(th)*dth)
@@ -525,18 +529,6 @@ class Model():
         self.d2_bd0[-1,:] = (-((rm**2)/(r*dr)**2 + (sin(thp) + sin(thm))/(sin(th)*(r*dth)**2) + (m/(r*sin(th)))**2))[-1,:]
         self.d2_km1_bd0[0,:] = np.zeros(Nl)
         self.d2_bd0[0,:] = (-((rp**2)/(r*dr)**2 + (sin(thp) + sin(thm))/(sin(th)*(r*dth)**2) + (m/(r*sin(th)))**2))[0,:]
-
-        # Laplacian for conducting-core boundary (ccb), derivative=0  (bth, bph terms)
-        self.d2_kp1_ccb0 = np.array(self.d2_kp1_b0)
-        self.d2_km1_ccb0 = self.d2_km1_b0
-        self.d2_km1_ccb0[0,:] = np.zeros(Nl)
-        self.d2_lp1_ccb0 = self.d2_lp1
-        self.d2_lm1_ccb0 = self.d2_lm1
-        self.d2_ccb0 = np.array(self.d2_b0)
-        self.d2_ccb0[0,:] = (-(rp[0,:]**2+2*rm[0,:]**2)/(r[0,:]**2*dr**2)
-                             - (sin(thp[0,:]) + sin(thm[0,:]))/(sin(th[0,:])*r[0,:]**2*dth**2)
-                             - (m/(r[0,:]*sin(th[0,:])))**2)
-        self.d2_v_ccb0 = rm[0,:]**2/(r[0,:]**2*dr**2)
 
         #%% d2r
         self.d2r_thlp1  = - self.ddth_lp1/r
@@ -585,9 +577,18 @@ class GovEquation():
 
         if l_vals is None:
             l_vals = range(max(0,-ldiff),Nl+min(0,-ldiff))
+        else:
+            if ldiff > 0:
+                l_vals = [l for l in l_vals if (l + ldiff <= Nl-1)]
+            elif ldiff < 0:
+                l_vals = [l for l in l_vals if (l + ldiff >= 0)]
         if k_vals is None:
             k_vals = range(max(0,-kdiff),Nk+min(0,-kdiff))
-
+        else:
+            if kdiff > 0:
+                k_vals = [k for k in k_vals if (k+kdiff <= Nk-1)]
+            elif kdiff < 0:
+                k_vals = [k for k in k_vals if (k+kdiff >= 0)]
         # Check Inputs:
         if var not in self.model.model_variables:
             raise RuntimeError('variable not in model')
@@ -619,6 +620,14 @@ class GovEquation():
         self.add_term(var, C*self.model.ddr_km1, kdiff=-1, k_vals=k_vals, l_vals=l_vals)
         self.add_term(var, C*self.model.ddr, k_vals=k_vals, l_vals=l_vals)
 
+    def add_dr_bd(self, var, C=1., k_vals=None, l_vals=None):
+        """
+
+        :return:
+        """
+        self.add_term(var, C*self.model.ddr_bd_km1, kdiff=-1, k_vals=k_vals, l_vals=l_vals)
+        self.add_term(var, C*self.model.ddr_bd, k_vals=k_vals, l_vals=l_vals)
+
     def add_dr_b0(self, var, C=1., k_vals=None, l_vals=None):
         """
 
@@ -632,32 +641,6 @@ class GovEquation():
         self.add_term(var, C*self.model.ddr_kp1_bd0, kdiff=+1, k_vals=k_vals, l_vals=l_vals)
         self.add_term(var, C*self.model.ddr_km1_bd0, kdiff=-1, k_vals=k_vals, l_vals=l_vals)
         self.add_term(var, C*self.model.ddr_bd0, k_vals=k_vals, l_vals=l_vals)
-
-    def add_dr_ccb0(self, var, C=1., k_vals=None, l_vals=None):
-        """
-
-        :return:
-        """
-        self.add_term(var, C*self.model.ddr_kp1_ccb0, kdiff=+1, k_vals=k_vals, l_vals=l_vals)
-        self.add_term(var, C*self.model.ddr_km1_ccb0, kdiff=-1, k_vals=k_vals, l_vals=l_vals)
-        self.add_term(var, C*self.model.ddr_ccb0, k_vals=k_vals, l_vals=l_vals)
-        if var == 'bth':
-            self.add_dr_v_ccb0('vth', C=C, l_vals=l_vals)
-        elif var =='bph':
-            self.add_dr_v_ccb0('vph', C=C, l_vals=l_vals)
-        else:
-            raise ValueError('dr_ccb0 should only be used for bth or bph terms')
-
-    def add_dr_v_ccb0(self, var, C=1., k_vals=[0], l_vals=None):
-        if type(C) == (float or int):
-            Cb = C
-        elif type(C) == np.ndarray:
-            Cb = np.array(C[0,:], ndmin=2)
-        E = self.model.E
-        Pm = self.model.Pm
-        Br = np.array(self.model.Br[0,:], ndmin=2)
-        delta_C = self.model.delta_C
-        self.add_term(var, Cb*Br*Pm*delta_C/((1+1j)*E)*self.model.ddr_v_ccb0, k_vals=k_vals, l_vals=l_vals)
 
     def add_dth(self, var, C=1, k_vals=None, l_vals=None):
         self.add_term(var, C*self.model.ddth_lp1, ldiff=+1, k_vals=k_vals, l_vals=l_vals)
@@ -673,6 +656,10 @@ class GovEquation():
         self.add_term(var, C*self.model.drP_lp1, ldiff=+1, k_vals=k_vals, l_vals=l_vals)
         self.add_term(var, C*self.model.drP_lm1, ldiff=-1, k_vals=k_vals, l_vals=l_vals)
         self.add_term(var, C*self.model.drP, k_vals=k_vals, l_vals=l_vals)
+
+    def add_drP_bd(self, var, C=1., k_vals=None, l_vals=None):
+        self.add_term(var, C*self.model.drP_bd_km1, kdiff=-1, k_vals=k_vals, l_vals=l_vals)
+        self.add_term(var, C*self.model.drP_bd, k_vals=k_vals, l_vals=l_vals)
 
     def add_dthP(self, var, C=1., k_vals=None, l_vals=None):
         self.add_term(var, C*self.model.dthP_lp1, ldiff=+1, k_vals=k_vals, l_vals=l_vals)
@@ -707,31 +694,6 @@ class GovEquation():
         self.add_term(var, C*self.model.d2_lp1_bd0, ldiff=+1, k_vals=k_vals, l_vals=l_vals)
         self.add_term(var, C*self.model.d2_lm1_bd0, ldiff=-1, k_vals=k_vals, l_vals=l_vals)
         self.add_term(var, C*self.model.d2_bd0, k_vals=k_vals, l_vals=l_vals)
-
-    def add_d2_ccb0(self, var, C=1., k_vals=None, l_vals=None):
-        self.add_term(var, C*self.model.d2_kp1_ccb0, kdiff=+1, k_vals=k_vals, l_vals=l_vals)
-        self.add_term(var, C*self.model.d2_km1_ccb0, kdiff=-1, k_vals=k_vals, l_vals=l_vals)
-        self.add_term(var, C*self.model.d2_lp1_ccb0, ldiff=+1, k_vals=k_vals, l_vals=l_vals)
-        self.add_term(var, C*self.model.d2_lm1_ccb0, ldiff=-1, k_vals=k_vals, l_vals=l_vals)
-        self.add_term(var, C*self.model.d2_ccb0, k_vals=k_vals, l_vals=l_vals)
-        if var == 'bth':
-            self.add_d2_v_ccb0('vth', C=C, l_vals=l_vals)
-        elif var =='bph':
-            self.add_d2_v_ccb0('vph', C=C, l_vals=l_vals)
-        else:
-            raise ValueError('d2_ccb0 should only be used for bth or bph terms')
-
-    def add_d2_v_ccb0(self, var, C=1., k_vals=None, l_vals=None):
-        if type(C) == (float or int):
-            Cb = C
-        elif type(C) == np.ndarray:
-            Cb = np.array(C[0,:], ndmin=2)
-
-        E = self.model.E
-        Pm = self.model.Pm
-        Br = np.array(self.model.Br[0,:], ndmin=2)
-        delta_C = self.model.delta_C
-        self.add_term(var, Cb*2*Br*Pm*delta_C/((1+1j)*E)*self.model.d2_v_ccb0, k_vals=[0], l_vals=None)
 
     def add_d2r_th(self, var, C=1., k_vals=None, l_vals=None):
         """

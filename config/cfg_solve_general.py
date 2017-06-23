@@ -2,49 +2,48 @@
 import numpy as np
 """ Configuration File for SLEPc Run solving MAC model """
 
-T_list = [20., 60., 80.1, 100.,]
-
-nev = 50
-num_to_keep = 10
-
-eq_split = 0.5
-target_r_order = 0
-target_th_order = 4
+T_list = [ -8, 8., -10,10, -50, 50., -500, 500.,]
 target_Q = 5.
-target_symmetric = True
-target_region='equator'
 
-wt_T = 0.
-wt_Q = 0.
-wt_r_order = 0.
-wt_th_order = 0.
-wt_region = 1.
-wt_sym = 0.
-wt_r_sm = 0.
-wt_th_sm = 1e4
+num_solutions_to_calculate = 200
+num_solutions_to_plot = 50
 
-eq_var = 'uph'
-r_ord_var = 'uph'
-th_ord_var = 'uph'
-real_var = 'uph'
+# Parameters for deciding which solutions to keep or discard
+filter_dict = {}
+filter_dict['Q'] = {'minimum':0.01}
+filter_dict['order_r'] = {'maximum':10, 'var':'vth'}
+filter_dict['order_r'] = {'maximum':10, 'var':'vph'}
+filter_dict['order_th'] = {'maximum':30, 'var':'vth'}
+filter_dict['order_th'] = {'maximum':30, 'var':'vph'}
 
+# Parameters for sorting solutions for plotting
+sort_dict = {}
+sort_dict['T'] = {'target': 1., 'weight':1.}
+sort_dict['Q'] = {'target': 5., 'weight':1.}
+sort_dict['order_r'] = {'target': 0., 'weight':1., 'var':'vth'}
+sort_dict['order_th'] = {'target': 0., 'weight':1., 'var':'vth'}
+sort_dict['region'] = {'target': 'equator', 'weight':1., 'var':'vth', 'split':0.5}
+sort_dict['symmetry'] = {'target': 'symmetric', 'weight':1., 'var':'vth'}
+sort_dict['smoothness_r'] = {'weight':10., 'var':'vth'}
+sort_dict['smoothness_th'] = {'weight':10., 'var':'vth'}
+# sort_dict['power_in_layers'] = {'weight':1., 'layer_wanted':1, 'var':'ur', 'split_index':10}
+
+# runtime parameters
+notify_me_by_text = True
+verbose = False
+num_threads = None
+
+# location of pre-computed data matrices
+data_dir = [
+    '../data/m0_140km_constant_1.00N_constant_0.62mTBr_100k_200l/',
+    '../data/m6_140km_constant_1.00N_constant_0.62mTBr_100k_200l/',
+]
+
+# file names
 filemodel = 'model.p'
 fileA = 'A'
 fileB = 'B'
 savefile = 'data.p'
 
-plot_robinson = False
-plot_B_obs = False
-plot_vel = True
-
-tol = 1e-8
-
-
-dCyr_list = [68.44627]
-data_dir = [
-    '../data/k10_l20_m0_nu8e-01_139km_constantN100_absDipoleBrB31_general/',
-]
-
-notify_me_by_text = True
-verbose = False
-num_threads = None
+# numerical tolerance of solution
+tol = 1e-6

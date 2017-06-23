@@ -8,8 +8,8 @@ model_type = "MAC_model"
 m = [0,6]
 
 # Size of grid
-Nk = 30 # Radial cells
-Nl = 140 # Latitudinal cells
+Nk = 41 # Radial cells
+Nl = 150 # Latitudinal cells
 
 # Define Physical Constants
 R = 3480e3  # Outer core radius in (m)
@@ -21,7 +21,6 @@ eta = 0.8  # magnetic diffusivity in (m^2/s)
 mu_0 = 4.*np.pi*10.**-7  # vacuum permeability in (kg*m/(A^2s^2))
 g = 10.  # Gravity in m/s^2
 dCyr = [8., 75., 150., 600.]
-# dCyr = [65., 150., 300., 600.]
 
 # background magnetic field (Tesla)
 # choices: dipole, abs_dipole, constant, set

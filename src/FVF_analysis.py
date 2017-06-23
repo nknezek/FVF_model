@@ -10,10 +10,18 @@ def filter_results(model, vals, vecs, filter_dict):
 def filter_by_type(type_of_filter, parameters, model, vals, vecs):
     if type_of_filter is 'Q':
         return filter_by_Q(vals, vecs, parameters)
-    if type_of_filter is 'order_r':
+    elif type_of_filter is 'order_r':
         return filter_by_order_r(model, vals, vecs, parameters)
-    if type_of_filter is 'order_th':
+    elif type_of_filter is 'order_th':
         return filter_by_order_th(model, vals, vecs, parameters)
+    elif type_of_filter is 'T':
+        if 'neg_allowed' in parameters:
+            neg_allowed = parameters['neg_allowed']
+        else:
+            neg_allowed = False
+        return filter_by_T(model, vals, vecs, parameters, neg_allowed=neg_allowed)
+    else:
+        return vals, vecs
 
 def filter_by_order_th(model, vals, vecs, parameters):
     filtered_vals = []
@@ -43,6 +51,26 @@ def filter_by_order_r(model, vals, vecs, parameters):
                 keep = False
         if 'minimum' in parameters.keys():
             if zc < parameters['minimum']:
+                keep = False
+        if keep:
+            filtered_vals.append(val)
+            filtered_vecs.append(vec)
+    return filtered_vals, filtered_vecs
+
+def filter_by_T(model, vals, vecs, parameters, neg_allowed=False):
+    filtered_vals = []
+    filtered_vecs = []
+    for ind, (val, vec) in enumerate(zip(vals, vecs)):
+        if neg_allowed:
+            T = np.abs(get_period(model, val))
+        else:
+            T = get_period(model, val)
+        keep = True
+        if 'maximum' in parameters.keys():
+            if T > parameters['maximum']:
+                keep = False
+        if 'minimum' in parameters.keys():
+            if T < parameters['minimum']:
                 keep = False
         if keep:
             filtered_vals.append(val)
@@ -142,11 +170,11 @@ def misfit_region(model, vec, parameters):
 def misfit_symmetry(model, vec, parameters):
     var_out = model.get_variable(vec, parameters['var'])
     north_power = np.mean(np.abs(var_out[:, model.Nl//2:]))
-    sovth_power = np.mean(np.abs(var_out[:, :model.Nl//2]))
+    south_power = np.mean(np.abs(var_out[:, :model.Nl//2]))
     if parameters['target'] is 'symmetric':
-        return np.abs((north_power - sovth_power)/(north_power+sovth_power))
+        return np.abs((north_power - south_power)/(north_power+south_power))
     elif parameters['target'] is 'asymmetric':
-        return 1.-np.abs((north_power + sovth_power) / (north_power + sovth_power))
+        return 1.-np.abs((north_power + south_power) / (north_power + south_power))
 
 def misfit_smoothness_r(model, vec, parameters):
     y = (model.get_variable(vec, parameters['var'])).real
@@ -234,7 +262,7 @@ def get_order_th(model, vec, var='vth', cutoff=0.075):
     zeros = np.where(stripped_signs[1:] != stripped_signs[:-1])[0]
     return len(zeros)
 
-def get_order_r(model, vec, var='vph', cutoff=0.075):
+def get_order_r(model, vec, var='vth', cutoff=0.075):
     z = model.get_variable(vec, var)
     ind = np.argmax(np.mean(np.abs(z),axis=0))
     zi = z[1:-1,ind]
