@@ -438,10 +438,14 @@ class Model():
         Pm = self.Pm
         Br = self.Br
         delta_m = self.delta_m
+
         # radial derivative arrays
         self.ddr_kp1 = rp**2/(2*r**2*dr)
         self.ddr_km1 = -rm**2/(2*r**2*dr)
         self.ddr = 1/r
+
+        self.ddr_bd_km1 = -np.ones_like(r)/dr
+        self.ddr_bd = np.ones_like(r)/dr
 
         self.ddr_kp1_b0 = np.array(self.ddr_kp1)
         self.ddr_km1_b0 = np.array(self.ddr_km1)
@@ -479,6 +483,10 @@ class Model():
         self.drP_km1[0,:] = np.zeros(Nl)
         self.drP[0,:] = -rm[0,:]**2/(2*dr*r[0,:]**2) \
                         - (sin(thp[0,:]) + sin(thm[0,:]))/(4*r[0,:]*sin(th[0,:]))
+
+        # Pressure backwards difference radial derivative
+        self.drP_bd = np.ones_like(r)/dr
+        self.drP_bd_km1 = -np.ones_like(r)/dr
 
         # Pressure th derivative
         self.dthP_lp1 = sin(thp)/(2*r*sin(th)*dth)
@@ -612,6 +620,14 @@ class GovEquation():
         self.add_term(var, C*self.model.ddr_km1, kdiff=-1, k_vals=k_vals, l_vals=l_vals)
         self.add_term(var, C*self.model.ddr, k_vals=k_vals, l_vals=l_vals)
 
+    def add_dr_bd(self, var, C=1., k_vals=None, l_vals=None):
+        """
+
+        :return:
+        """
+        self.add_term(var, C*self.model.ddr_bd_km1, kdiff=-1, k_vals=k_vals, l_vals=l_vals)
+        self.add_term(var, C*self.model.ddr_bd, k_vals=k_vals, l_vals=l_vals)
+
     def add_dr_b0(self, var, C=1., k_vals=None, l_vals=None):
         """
 
@@ -640,6 +656,10 @@ class GovEquation():
         self.add_term(var, C*self.model.drP_lp1, ldiff=+1, k_vals=k_vals, l_vals=l_vals)
         self.add_term(var, C*self.model.drP_lm1, ldiff=-1, k_vals=k_vals, l_vals=l_vals)
         self.add_term(var, C*self.model.drP, k_vals=k_vals, l_vals=l_vals)
+
+    def add_drP_bd(self, var, C=1., k_vals=None, l_vals=None):
+        self.add_term(var, C*self.model.drP_bd_km1, kdiff=-1, k_vals=k_vals, l_vals=l_vals)
+        self.add_term(var, C*self.model.drP_bd, k_vals=k_vals, l_vals=l_vals)
 
     def add_dthP(self, var, C=1., k_vals=None, l_vals=None):
         self.add_term(var, C*self.model.dthP_lp1, ldiff=+1, k_vals=k_vals, l_vals=l_vals)

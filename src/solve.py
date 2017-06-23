@@ -110,7 +110,11 @@ def solve_for_combo(c):
         dCyr_use = futil.find_closest_CC(T, dCyr_list)
         logger.info('{0} dCyr used'.format(dCyr_use))
     except:
-        logger.error('problem storing config file or finding correct magnetic skin depth')
+        problem = "problem storing config file or finding correct magnetic skin depth"
+        logger.error(problem, exc_info=1)
+        print('combination {0}/{1} broke, {2}'.format(c['iter_num'], c['total_iter'], problem))
+
+        return
 
     # %% Load Matrices and model from files
     #==============================================================================
@@ -126,8 +130,10 @@ def solve_for_combo(c):
         logger.info('A'+str(dCyr_use)+' matrix used')
         logger.info('matrices and model loaded into memory from ' + data_dir)
     except:
-        logger.error( "Could not load matrices from file", exc_info=1)
-
+        problem = "Problem loading matrices from file."
+        logger.error(problem, exc_info=1)
+        print('combination {0}/{1} broke, {2}'.format(c['iter_num'], c['total_iter'], problem))
+        return
 
     # %% Set up SLEPc Solver
     #==============================================================================
@@ -145,7 +151,10 @@ def solve_for_combo(c):
         ST.setType(slepc4py.SLEPc.ST.Type.SINVERT)
         logger.info('Solver set up, Target Period = {0:.1f}, Number of solutions to calculate = {1}'.format(T, num_solutions_to_calculate))
     except:
-        logger.error( "Could not set up SLEPc solver ", exc_info=1)
+        problem = "Problem setting up SLEPc Solver."
+        logger.error(problem, exc_info=1)
+        print('combination {0}/{1} broke, {2}'.format(c['iter_num'], c['total_iter'], problem))
+        return
 
     # %% Solve Problem
     #==============================================================================
@@ -153,7 +162,10 @@ def solve_for_combo(c):
         EPS.solve()
         logger.info('problem solved')
     except:
-        logger.error("Could not solve problem.")
+        problem = "Problem Solving Eigenvalues."
+        logger.error(problem, exc_info=1)
+        print('combination {0}/{1} broke, {2}'.format(c['iter_num'], c['total_iter'], problem))
+        return
     try:
         # Save Computed Solutions
         conv = EPS.getConverged()
@@ -170,7 +182,10 @@ def solve_for_combo(c):
         Period_min = Periods.min()
         logger.info('min Period = {0:.1f}yrs, max Period = {1:.1f}yrs'.format(Period_min, Period_max))
     except:
-        logger.error("Could not get converged eigenvalues.", exc_info=1)
+        problem = "Problem Computing Eigenvalues."
+        logger.error(problem, exc_info=1)
+        print('combination {0}/{1} broke, {2}'.format(c['iter_num'], c['total_iter'], problem))
+        return
 
     #%% Filter Solutions
     #==============================================================================
@@ -184,9 +199,19 @@ def solve_for_combo(c):
         svals, svecs = fana.sort_by_total_misfit(model, fvals, fvecs, cfg.sort_dict)
 
     except:
-        logger.error("Problem Filtering Eigenvalues.", exc_info=1)
-        svals = vals
-        svecs = vecs
+        try:
+            problem = "Problem Saving Eigenvalues."
+            logger.error(problem, exc_info=1)
+            print('combination {0}/{1} broke, {2}'.format(c['iter_num'], c['total_iter'], problem))
+            svals = vals
+            svecs = vecs
+        except:
+            svals = []
+            svecs = []
+            problem = "Problem Saving Eigenvalues."
+            logger.error(problem, exc_info=1)
+            print('combination {0}/{1} broke, {2}'.format(c['iter_num'], c['total_iter'], problem))
+
     # %% Save Filtered Eigenvectors
     #==============================================================================
     try:
@@ -194,14 +219,16 @@ def solve_for_combo(c):
             dill.dump({'vals': svals, 'vecs': svecs, 'model':model},open(out_dir + savefile, 'wb'))
             logger.info('saved {0:d} vals and vecs saved to '.format(len(fvals)) + out_dir + savefile)
     except:
-        logger.error("Problem Saving Filtered Eigenvalues.", exc_info=1)
-
+        problem = "Problem Saving Eigenvalues."
+        logger.error(problem, exc_info=1)
+        print('combination {0}/{1} broke, {2}'.format(c['iter_num'], c['total_iter'], problem))
+        return
     # %% Plot Filtered Eigenvectors
     #==============================================================================
     try:
         logger.info('Plotting:')
 
-        for ind in range(cfg.num_solutions_to_plot):
+        for ind in range(min(cfg.num_solutions_to_plot,len(svals))):
             val = svals[ind]
             vec = fana.shift_vec_real(model, svecs[ind], var='vth')
             vec = fana.normalize_vec(vec, 10)
@@ -216,7 +243,8 @@ def solve_for_combo(c):
                 title = ('{0:03d} k={3}, l={4}, m={5}, T={1:.2f}yrs, Q={2:.2f}'.format(ind, Period, Q, r_ord, th_ord, model.m)
                          + '\nH={:.0f}km, B={:.2f}mT, N={:.2f} pvbc'.format(model.h/1e3, np.mean(model.Br)*model.B_star*1e3, np.mean(model.N)))
             if (model.Nk > 1):
-                fplt.plot_fast_solution(model, vec, title=title, dir_name=out_dir)
+                # fplt.plot_fast_solution(model, vec, title=title, dir_name=out_dir)
+                fplt.plot_full_solution(model, val, vec, title=title, dir_name=out_dir, layer_boundary=3380)
             else:
                 if('br' in model.model_variables):
                     fplt.plot_1D(model, vec, val, ind, dir_name=out_dir, title=title)
@@ -225,20 +253,33 @@ def solve_for_combo(c):
             logger.info('\t plotted ind={0}, T={1:.2f}yrs (eig={2:.2e})'.format(ind, Period, val))
         logger.info('run complete')
     except:
-        logger.error("Problem Plotting Eigenvalues.", exc_info=1)
+        problem = "Problem Plotting Eigenvalues."
+        logger.error(problem, exc_info=1)
+        print('combination {0}/{1} broke, {2}'.format(c['iter_num'], c['total_iter'], problem))
+
+        return
     dtime = (time_start + time.time())/60.
     print('done with combination {0}/{1} in {2:.2f}min'.format(c['iter_num'], c['total_iter'], dtime))
 
 if __name__ == '__main__':
-    if cfg.num_threads is None:
-        procs = mp.cpu_count()
-    else:
-        procs = cfg.num_threads
-    p = mp.Pool(processes=procs)
-    p.map(solve_for_combo, combinations)
-    time = datetime.today().ctime()
-    message = 'finished solvimg {0} parameter sets using {1} at {2}'.format(len(combinations), config_file, time)
-    print(message)
-    if cfg.notify_me_by_text:
-        cli = fvn.MessageClient()
-        cli.send_message(message)
+    try:
+        if cfg.num_threads is None:
+            procs = mp.cpu_count()
+        else:
+            procs = cfg.num_threads
+        mainlogging = mp.log_to_stderr()
+        p = mp.Pool(processes=procs)
+        p.map(solve_for_combo, combinations)
+        time = datetime.today().ctime()
+        message = 'finished run of {0} parameter sets using {1} at {2}'.format(len(combinations), config_file, time)
+        print(message)
+        if cfg.notify_me_by_text:
+            cli = fvn.MessageClient()
+            cli.send_message(message)
+    except:
+        message = "something went wrong with the multi-threading"
+        print(message)
+        if cfg.notify_me_by_text:
+            cli = fvn.MessageClient()
+            cli.send_message(message)
+
