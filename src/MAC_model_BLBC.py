@@ -4,7 +4,10 @@ from numpy import sin, cos, tan
 
 class Model(FVF_model_base.Model):
     '''
-    Class to run the FVF model for MAC waves
+    Class to run the FVF model for MAC waves, numerically computing a boundary-layer underneat the layer in study
+    at base of the additional boundary layer, all variables (including pressure) are set to zero.
+    In the lower layer, radial derivatives are computed using a backwards difference method instead of the FVF method for numerical stability.
+
     defines make_A and make_B
 
     Equations Include:
