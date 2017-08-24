@@ -217,7 +217,7 @@ def solve_for_combo(c):
     try:
         if savefile:
             dill.dump({'vals': svals, 'vecs': svecs, 'model':model},open(out_dir + savefile, 'wb'))
-            logger.info('saved {0:d} vals and vecs saved to '.format(len(fvals)) + out_dir + savefile)
+            logger.info('saved {0:d} vals and vecs saved to '.format(len(svals)) + out_dir + savefile)
     except:
         problem = "Problem Saving Eigenvalues."
         logger.error(problem, exc_info=1)

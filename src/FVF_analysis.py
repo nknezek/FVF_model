@@ -1,4 +1,5 @@
 import numpy as np
+import FVF_utilities as futil
 
 def filter_results(model, vals, vecs, filter_dict):
     fvals = vals
@@ -228,6 +229,24 @@ def shift_vec_real(model, vec, var='ur'):
     else:
         return vec*np.exp(-1j*avg_ang)
 
+def shift_vec_real_nomodel(vec, Nk, Nl, var='ur', model_variables = ('vr', 'vth', 'vph', 'bth', 'bph', 'p', 'ur')):
+    ''' shift given vector's phase so that given variable (default ur) is
+    dominantly real'''
+    v = futil.get_variable_from_vec(vec, var, Nk, Nl, model_variables=model_variables)
+    angs = np.angle(v) % np.pi
+    abs_v = np.abs(v)
+    avg_ang = np.average(angs, weights=abs_v) # shift phase angle
+    # shift case to deal with vectors that are already dominantly real
+    var_ang = np.average((angs - avg_ang)**2, weights=abs_v)
+    if var_ang > 0.5:
+        shift = np.exp(0.5j*np.pi)
+        v_s = v*shift
+        angs_s = np.angle(v_s) % np.pi
+        avg_ang = np.average(angs_s, weights=abs_v)
+        return vec*np.exp(-1j*(avg_ang-0.5*np.pi))
+    else:
+        return vec*np.exp(-1j*avg_ang)
+
 def normalize_vec_physical_units(model, vec, var, normalization_value, velocity_type='mm/s'):
     var_data = model.get_variable(vec, var)
     var_data_physical = convert_var_to_physical_units(model, var, var_data, velocity_type=velocity_type)
@@ -253,7 +272,8 @@ def convert_var_to_physical_units(model, var, var_data, velocity_type='mm/s'):
     return var_data
 
 def get_order_th(model, vec, var='vth', cutoff=0.075):
-    z = model.get_variable(vec, var)
+    v = shift_vec_real(model, vec, var=var)
+    z = model.get_variable(v, var)
     ind = np.argmax(np.mean(np.abs(z),axis=1))
     zi = z[ind,1:-1]
     zi[np.abs(zi) < cutoff * np.max(np.abs(zi))] = 0.
@@ -263,7 +283,8 @@ def get_order_th(model, vec, var='vth', cutoff=0.075):
     return len(zeros)
 
 def get_order_r(model, vec, var='vth', cutoff=0.075):
-    z = model.get_variable(vec, var)
+    v = shift_vec_real(model, vec, var=var)
+    z = model.get_variable(v, var)
     ind = np.argmax(np.mean(np.abs(z),axis=0))
     zi = z[1:-1,ind]
     zi[np.abs(zi) < cutoff * np.max(np.abs(zi))] = 0.
@@ -276,7 +297,10 @@ def get_Q(val):
     return np.abs(val.imag/(2*val.real))
 
 def get_period(model, val):
-    return (2*np.pi/val.imag)*model.t_star/(24.*3600.*365.25)
+    if val.imag != 0.:
+        return (2*np.pi/val.imag)*model.t_star/(24.*3600.*365.25)
+    else:
+        return np.infty
 
 def get_decay(model, val):
     return (2 * np.pi / val.real) * model.t_star / (24. * 3600. * 365.25)

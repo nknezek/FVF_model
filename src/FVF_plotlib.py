@@ -13,6 +13,7 @@ import matplotlib.pylab as pyl
 import matplotlib as mpl
 from matplotlib import gridspec
 import FVF_analysis as fana
+import FVF_utilities as futil
 
 colors = ['b','g','r','m','y','k','c']
 
@@ -504,9 +505,267 @@ def plot_Vphi(model, dir_name='./', title='Vphi structure'):
     fig.set_tight_layout(True)
     plt.savefig(dir_name+title+'.png')
 
+def plot_wave_dependence(xax, yax, dataframe, default_vars, bc='pvbc', grby='l', log=False, save_fig=True, close=True,
+                         new_fig=True, ymin=None, ymax=None, xmin=None,xmax=None,
+                         max_l=10, logx=False, return_num_plotted=False):
+    '''
+    plots xax vs yax given a pandas dataframe with information on computed waves (produced by FVF_utilities.datadict_to_dataframe)
+
+    :param xax:
+    :param yax:
+    :param dataframe:
+    :param default_vars:
+    :param bc:
+    :param grby:
+    :param log:
+    :param save_fig:
+    :param close:
+    :param new_fig:
+    :param ymin:
+    :param ymax:
+    :param max_l:
+    :param logx:
+    :return:
+    '''
+    stationary_vars = list(default_vars)
+    for item in stationary_vars:
+        if item[0] == xax:
+            stationary_vars.remove(item)
+    title = yax + ' vs ' + xax + '\n' + bc
+    savename = yax + ' vs ' + xax + ' ' + bc
+
+    filtdf = dataframe
+    for k, v in stationary_vars:
+        filtdf = futil.select_from_df_keyvalue(filtdf, k,v)
+        # filtdf = filtdf[filtdf[k] == v]
+        title += ', {}={}'.format(k, v)
+        savename += ', {}={}'.format(k, v)
+    filtdf = filtdf[filtdf['l'] <= max_l]
+
+    grouped = filtdf.groupby(grby)
+    if new_fig:
+        fig = plt.figure()
+    if xmax is None:
+        xmax_val = 0.
+    if xmin is None:
+        xmin_val = 1e50
+    cmap = mpl.cm.jet_r
+    num_plotted = 0
+
+    for i, (name, group) in enumerate(grouped):
+        if type(name) is tuple:
+            l = name[0]
+        else:
+            l = name
+        Ncolors = 10
+        gr = grouped.get_group(name)
+        num_plotted += len(gr)
+        st = gr.sort_values(xax)
+        if xmax is None:
+            xmax_val = max(xmax_val, st[xax].max())
+        if xmin is None:
+            xmin_val = min(xmin_val, st[xax].min())
+        if log:
+            if logx:
+                plt.loglog(st[xax], st[yax], 'o', label='l={}'.format(l), color=cmap(l / Ncolors),
+                           zorder=2 + 1 / (i + 1))
+            else:
+                plt.semilogy(st[xax], st[yax], 'o', label='l={}'.format(l), color=cmap(l / Ncolors),
+                             zorder=2 + 1 / (i + 1))
+        else:
+            plt.plot(st[xax], st[yax], 'o', label='l={}'.format(l), color=cmap(l / Ncolors), zorder=2 + 1 / (i + 1))
+    if xmax is not None:
+        xmax_val = xmax
+    if xmin is not None:
+        xmin_val = xmin
+    if yax == 'period':
+        wantedmin = 5
+        wantedmax = 12
+        plt.fill_between([xmin_val * 0.5, xmax_val * 20], [wantedmin] * 2, [wantedmax] * 2, color='green', alpha=0.2)
+    if yax == 'Q':
+        wantedmin = 1e-2
+        wantedmax = 1
+        plt.fill_between([xmin_val * 0.5, xmax_val * 20], [wantedmin] * 2, [wantedmax] * 2, color='red', alpha=0.2)
+    plt.legend(loc=0)
+    if logx:
+        plt.xlim(xmin_val * 0.5, xmax_val * 20)
+    else:
+        plt.xlim(xmin_val * 0.9, xmax_val * 1.3)
+    if ymin is not None:
+        plt.ylim(ymin=ymin)
+    if ymax is not None:
+        plt.ylim(ymax=ymax)
+    plt.ylabel(yax)
+    plt.xlabel(xax)
+    plt.title(title)
+    plt.grid()
+    if save_fig:
+        plt.savefig('./plots/' + savename + '.png')
+    if close:
+        plt.close()
+    if return_num_plotted:
+        return num_plotted
+
+def plot_wave_location(xax, dataframe, default_vars, bc='pvbc', grby='l', save_fig=True, close=True, new_fig=True,
+                       max_l=10, logx=False, xmin=None, xmax=None):
+    '''
+        plots latitudinal location of a wave given a pandas dataframe with information on computed waves (produced by FVF_utilities.datadict_to_dataframe)
+
+    :param xax:
+    :param dataframe:
+    :param default_vars:
+    :param bc:
+    :param grby:
+    :param save_fig:
+    :param close:
+    :param new_fig:
+    :param max_l:
+    :param logx:
+    :return:
+    '''
+    yax = 'Location'
+    stationary_vars = list(default_vars)
+    for item in stationary_vars:
+        if item[0] == xax:
+            stationary_vars.remove(item)
+    title = yax + ' vs ' + xax + '\n' + bc
+    savename = yax + ' vs ' + xax + ' ' + bc
+
+    filtdf = dataframe
+    for k, v in stationary_vars:
+        filtdf = futil.select_from_df_keyvalue(filtdf, k,v)
+        # filtdf = filtdf[filtdf[k] == v]
+        title += ', {}={}'.format(k, v)
+        savename += ', {}={}'.format(k, v)
+    filtdf = filtdf[filtdf['l'] <= max_l]
+    grouped = filtdf.groupby(grby)
+    if new_fig:
+        fig = plt.figure()
+    if xmax is None:
+        xmax_val = 0.
+    if xmin is None:
+        xmin_val = 1e50
+    cmap = mpl.cm.jet_r
+    for i, (name, group) in enumerate(grouped):
+        if type(name) is tuple:
+            l = name[0]
+        else:
+            l = name
+        Ncolors = 10
+        gr = grouped.get_group(name)
+        st = gr.sort_values(xax)
+        if xmax is None:
+            xmax_val = max(xmax_val, st[xax].max())
+        if xmin is None:
+            xmin_val = min(xmin_val, st[xax].min())
+        if logx:
+            plt.semilogx(st[xax], st['max_loc'], 'o', label='l={}'.format(l), color=cmap(l / Ncolors),
+                         zorder=2 + 1 / (i + 1))
+            plt.errorbar(st[xax], st['max_loc'], yerr=np.vstack((st['max_loc']-st['bot_loc'], st['top_loc']-st['max_loc'])), alpha=.9, color=cmap(l / Ncolors),
+                             zorder=1 + 1 / (i + 1), label='_', ls='None', fmt='o')
+        else:
+            plt.plot(st[xax], st['max_loc'], 'o', label='l={}'.format(l), color=cmap(l / Ncolors),
+                     zorder=2 + 1 / (i + 1))
+            plt.errorbar(st[xax], st['max_loc'], yerr=np.vstack((st['max_loc']-st['bot_loc'], st['top_loc']-st['max_loc'])), alpha=.9, color=cmap(l / Ncolors),
+                             zorder=1 + 1 / (i + 1), label='_', ls='None', fmt='o')
+    plt.legend(loc=0)
+    if xmax is not None:
+        xmax_val = xmax
+    if xmin is not None:
+        xmin_val = xmin
+    if logx:
+        plt.xlim(xmin_val * 0.5, xmax_val * 20)
+    else:
+        plt.xlim(xmin_val * 0.9, xmax_val * 1.3)
+    plt.ylim(ymin=-90, ymax=90)
+    plt.yticks(np.linspace(-90, 90, 9))
+    plt.ylabel('latitude')
+    plt.xlabel(xax)
+    plt.title(title)
+    plt.grid()
+    if save_fig:
+        plt.savefig('./plots/' + savename + '.png')
+    if close:
+        plt.close()
+
+def plot_subplots(xax, dataframe, default_vars, bc='pvbc', grby='l', log=False, max_l=10, logx=False, output_folder='./plots/',
+                  dont_plot_if_blank=False, xmin=None, xmax=None):
+    '''
+        plots the period, quality factor, and latitudinal loction of waves in three subplots, given a pandas dataframe with information on computed waves (produced by FVF_utilities.datadict_to_dataframe)
+
+    :param xax:
+    :param dataframe:
+    :param default_vars:
+    :param bc:
+    :param grby:
+    :param log:
+    :param max_l:
+    :param logx:
+    :return:
+    '''
+    stationary_vars = list(default_vars)
+    for item in stationary_vars:
+        if item[0] == xax:
+            stationary_vars.remove(item)
+    savename = xax + ' dependence ' + bc
+    for k, v in stationary_vars:
+        savename += ', {}={}'.format(k, v)
+
+    p_ymin = 7e-3
+    p_ymax = 2e3
+    q_ymin = 1e-2
+    q_ymax = 1e5
+    plt.figure(figsize=(6, 12))
+    plt.subplot(311)
+    if dont_plot_if_blank:
+        num_plotted = plot_wave_dependence(xax, 'period', dataframe, default_vars, bc=bc, grby=grby, log=log, save_fig=False,
+                                 close=False, new_fig=False, ymin=p_ymin, ymax=p_ymax, max_l=max_l, logx=logx, return_num_plotted=True, xmin=xmin, xmax=xmax)
+    else:
+        plot_wave_dependence(xax, 'period', dataframe, default_vars, bc=bc, grby=grby, log=log, save_fig=False,
+                                 close=False, new_fig=False, ymin=p_ymin, ymax=p_ymax, max_l=max_l, logx=logx, xmin=xmin, xmax=xmax)
+
+    plt.subplot(312)
+    plot_wave_dependence(xax, 'Q', dataframe, default_vars, bc=bc, grby=grby, log=log, save_fig=False, close=False,
+                             new_fig=False, ymin=q_ymin, ymax=q_ymax, max_l=max_l, logx=logx, xmin=xmin, xmax=xmax)
+    plt.subplot(313)
+    plot_wave_location(xax, dataframe, default_vars, bc=bc, grby=grby, save_fig=False, close=False, new_fig=False,
+                       max_l=max_l, logx=logx, xmin=xmin, xmax=xmax)
+    if dont_plot_if_blank:
+        if num_plotted>0:
+            plt.savefig(output_folder + savename + '.png')
+    else:
+        plt.savefig(output_folder + savename + '.png')
+    plt.close()
 
 
-
+def plot_all_parameter_dependences( df, h, N, Bd=0.5, Brnse=0.3, k =1, grby=['l'], max_l=5, logx=True, regions=['equator','mid-latitude'],
+                                    directions=['east','west'], output_folder='./plots/', dont_plot_if_blank=False):
+    # plot all relevant plots
+    # for long_period in [True, False]:
+    futil.ensure_dir(output_folder)
+    for region in regions:
+        for direction in directions:
+            default_vars = [
+                ('k', k),
+                ('h', h),
+                ('N', N),
+                ('Bd', Bd),
+                ('Brnse', Brnse),
+            ]
+            default_vars.append(('direction', direction))
+            default_vars.append(('region', region))
+            for xax in ['h', 'N', 'Brnse']:
+                if xax == 'N':
+                    xmin = 0.05
+                    xmax = 30.
+                elif xax == 'h':
+                    xmin = 10.
+                    xmax = 200./6.
+                elif xax == 'Brnse':
+                    xmin = 0.1
+                    xmax = 0.7/8.
+                plot_subplots(xax, df, default_vars, grby=grby, log=True, max_l=max_l, logx=logx, output_folder=output_folder,
+                              dont_plot_if_blank=dont_plot_if_blank, xmin=xmin, xmax=xmax)
 
 
 
