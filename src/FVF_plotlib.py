@@ -768,6 +768,69 @@ def plot_all_parameter_dependences( df, h, N, Bd=0.5, Brnse=0.3, k =1, grby=['l'
                               dont_plot_if_blank=dont_plot_if_blank, xmin=xmin, xmax=xmax)
 
 
+def plot_hermite_fit(vec, ffuns, coeffs, Nk, Nl, l, savefig=False):
+    dth = 180 / Nl
+    lat = np.linspace(-90 + dth / 2, 90 - dth / 2, Nl)
+    vec = fana.shift_vec_real_nomodel(vec, Nk, Nl, var='vph')
+    vph = futil.get_variable_from_vec(vec, 'vph', Nk, Nl)
+    vec = vec / np.max(np.abs(vph.real))
+    vph = futil.get_variable_from_vec(vec, 'vph', Nk, Nl)
+    vphr = vph[-1, :].real
+    vphi = vph[-1, :].imag
+    vth = futil.get_variable_from_vec(vec, 'vth', Nk, Nl)
+    vthr = vth[-1, :].real
+    vthi = vth[-1, :].imag
+
+    plt.figure(figsize=(8, 8))
+    plt.subplot(221)
+    plt.plot(lat, vthr, 'b.', alpha=0.5)
+    plt.plot(lat, vthi, 'g.', alpha=0.5)
+    # labels = ['vth r','vth i', 'vph r', 'vph i']
+    labels = ['real', 'imag', 'fit', 'fit']
+
+    plt.plot(lat, ffuns[0](lat), '-', label='fit')
+    plt.plot(lat, ffuns[1](lat), '-', label='fit')
+
+    plt.legend(loc=0, labels=labels)
+    plt.title('vth, l={}'.format(l))
+    plt.xlim(-90, 90)
+    plt.xlabel('latitude')
+    plt.ylabel('flow speed (normalized vph_max=1)')
+
+    plt.subplot(222)
+    plt.title('coefficients, delta_x={:.1f}r,{:.1f}i'.format(coeffs[0][-1], coeffs[1][-1]))
+
+    plt.plot(coeffs[0][:-1], '-o')
+    plt.plot(coeffs[1][:-1], '-o')
+    plt.xlabel('degree')
+    plt.ylabel('coefficient value')
+
+    plt.subplot(223)
+    plt.plot(lat, vphr, 'b.', alpha=0.5)
+    plt.plot(lat, vphi, 'g.', alpha=0.5)
+    # labels = ['vth r','vth i', 'vph r', 'vph i']
+    labels = ['real', 'imag', 'fit', 'fit']
+    plt.plot(lat, ffuns[2](lat), '-', label='fit')
+    plt.plot(lat, ffuns[3](lat), '-', label='fit')
+
+    plt.legend(loc=0, labels=labels)
+    plt.title('vph, l={}'.format(l))
+    plt.xlim(-90, 90)
+    plt.xlabel('latitude')
+    plt.ylabel('flow speed (normalized vph_max=1)')
+
+    plt.subplot(224)
+    plt.title('coefficients, delta_x={:.1f}r,{:.1f}i'.format(coeffs[2][-1], coeffs[3][-1]))
+    plt.plot(coeffs[2][:-1], '-o')
+    plt.plot(coeffs[3][:-1], '-o')
+    plt.xlabel('degree')
+    plt.ylabel('coefficient value')
+
+    plt.tight_layout()
+    if savefig:
+        plt.savefig('hermite_fit_l{}.png'.format(l))
+
+
 
 
 
