@@ -1,15 +1,13 @@
 import numpy as np
-import FVF_analysis as fana
-import FVF_utilities as futil
+from . import analyze as fana
+from . import utilities as util
 import scipy.optimize as op
 import scipy.misc as ms
-import sys
 
-pmagpath = '/Users/nknezek/code/pymagmods/pymagmods/'
-sys.path.append(pmagpath)
-import pymagmods as pmag
-mflow = pmag.flows()
-chaos6 = pmag.chaos6()
+import coremagmodels as cm
+import coreflows as cf
+mflow = cf.Advect()
+chaos6 = cm.models.Chaos6()
 
 
 def fit_polynomial(x, y, deg=20):

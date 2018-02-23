@@ -1,4 +1,4 @@
-import FVF_model_base
+from . import FVF_model_base
 import numpy as np
 from numpy import sin, cos, tan
 

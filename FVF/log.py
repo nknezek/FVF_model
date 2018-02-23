@@ -1,6 +1,6 @@
 import logging
 import os
-import FVF_utilities as futil
+from . import utilities as futil
 
 def setup_custom_logger(dir_name='./',filename='MAC.log', verbose=True):
     futil.ensure_dir(dir_name)

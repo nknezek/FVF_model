@@ -1,6 +1,3 @@
-
-
-##### Display and Save 1D Waves with comparison Spherical Harmonics for found Eigenvalues and vector field map ######
 import matplotlib.cm as cm
 from numpy import sin
 from numpy import cos
@@ -12,11 +9,10 @@ import matplotlib.pyplot as plt
 import matplotlib.pylab as pyl
 import matplotlib as mpl
 from matplotlib import gridspec
-import FVF_analysis as fana
-import FVF_utilities as futil
+from . import analyze as fana
+from . import utilities as futil
 
 colors = ['b','g','r','m','y','k','c']
-
 
 def plot_solutions(model, vals, vecs, plot_options, out_dir='./'):
     for k in plot_options.keys():

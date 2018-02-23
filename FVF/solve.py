@@ -7,7 +7,7 @@ from datetime import datetime
 import sys, os
 import importlib
 import shutil
-import FVF_notify as fvn
+from . import notify as fvn
 
 # Import configuration file
 default_config = "cfg_solve_general"
@@ -64,8 +64,8 @@ def solve_for_combo(c):
     time_start = -time.time()
     import FVF_loglib as flog
     import FVF_plotlib as fplt
-    import FVF_analysis as fana
-    import FVF_utilities as futil
+    from . import analyze as fana
+    from . import utilities as util
     import petsc4py
     petsc4py.init()
     import slepc4py

@@ -5,7 +5,7 @@ import itertools as it
 import numpy as np
 import importlib
 import multiprocess as mp
-import FVF_notify as fvn
+from . import notify as fvn
 import datetime
 
 #%% Import configuration file
@@ -63,7 +63,7 @@ def make_matrix(c):
     '''
     import FVF_loglib as flog
     import FVF_plotlib as fplt
-    import FVF_utilities as futil
+    from . import utilities as util
 
     exec('import {0} as fvf'.format(c['model_type']))
 

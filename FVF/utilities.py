@@ -3,7 +3,7 @@ import shutil
 import sys
 import importlib
 import dill
-import FVF_analysis as fana
+from . import analyze as fana
 import numpy as np
 import pandas as pd
 import sys, os, re

@@ -1,5 +1,5 @@
 import numpy as np
-import FVF_utilities as futil
+from . import utilities as futil
 
 def filter_results(model, vals, vecs, filter_dict):
     fvals = vals
